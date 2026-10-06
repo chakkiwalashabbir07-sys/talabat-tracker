@@ -83,20 +83,19 @@ app.get('/health', async (req, res) => {
   });
 });
 
-// Apply Rate Limits
-app.use('/api/', apiLimiter);
+// Auth Route
 app.post('/api/auth/login', authLimiter, require('./controllers/authController').login);
 
 // Protected API Routes
-app.use('/api/student', verifyToken, require('./routes/studentRoutes'));
-app.use('/api/movement', verifyToken, require('./routes/movementRoutes'));
+app.use('/api/student', apiLimiter, verifyToken, require('./routes/studentRoutes'));
+app.use('/api/movement', apiLimiter, verifyToken, require('./routes/movementRoutes'));
 
 // Global Error Handler (Prevents stack trace leaks in production)
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error(err.stack || err);
   res.status(err.status || 500).json({
     success: false,
-    message: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message
+    message: err.message || 'Internal Server Error'
   });
 });
 

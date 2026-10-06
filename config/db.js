@@ -47,6 +47,21 @@ async function autoSeedCloudDB() {
           await User.bulkWrite(userOps);
         }
 
+        // Always ensure admin and guard credentials exist with known passwords
+        const bcrypt = require('bcryptjs');
+        const adminHash = await bcrypt.hash('admin123', 10);
+        const guardHash = await bcrypt.hash('guard123', 10);
+        await User.findOneAndUpdate(
+          { username: 'admin' },
+          { $set: { password: adminHash, role: 'admin' } },
+          { upsert: true }
+        );
+        await User.findOneAndUpdate(
+          { username: 'guard' },
+          { $set: { password: guardHash, role: 'guard' } },
+          { upsert: true }
+        );
+
         if (data.logs && data.logs.length > 0) {
           console.log(`Auto-seeding ${data.logs.length} movement logs...`);
           const logOps = data.logs.map(l => ({
