@@ -7,6 +7,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
 // Login Guard/Admin
 exports.login = async (req, res) => {
   try {
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database is not connected yet. Please add your MONGO_URI in Render dashboard under Environment.'
+      });
+    }
+
     const { username, password } = req.body;
     const user = await User.findOne({ username });
 
