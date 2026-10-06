@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const connectDB = require('./config/db');
+const mongoose = require('mongoose');
 const { verifyToken } = require('./middleware/authMiddleware');
 
 const app = express();
@@ -56,6 +57,16 @@ const authLimiter = rateLimit({
 
 // Database Connection
 connectDB();
+
+// Health Check endpoint (used by Render and uptime monitors)
+app.get('/health', (req, res) => {
+  const isDbConnected = mongoose.connection.readyState === 1;
+  res.json({
+    status: 'ok',
+    database: isDbConnected ? 'connected' : 'disconnected',
+    message: isDbConnected ? 'System healthy' : 'Database not connected. Please verify MONGO_URI in Render Environment Variables.'
+  });
+});
 
 // Apply Rate Limits
 app.use('/api/', apiLimiter);
