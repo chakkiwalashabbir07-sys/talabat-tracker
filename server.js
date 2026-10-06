@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const { verifyToken } = require('./middleware/authMiddleware');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Set security HTTP headers with relaxed CSP for CDN, barcode scanner, and camera
 app.use(
@@ -45,6 +46,7 @@ app.use(express.static('public'));
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
+  validate: { xForwardedForHeader: false },
   message: { success: false, message: 'Too many requests, please try again later.' }
 });
 
@@ -52,6 +54,7 @@ const apiLimiter = rateLimit({
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
+  validate: { xForwardedForHeader: false },
   message: { success: false, message: 'Too many failed login attempts. Try again in 15 minutes.' }
 });
 
@@ -59,11 +62,23 @@ const authLimiter = rateLimit({
 connectDB();
 
 // Health Check endpoint (used by Render and uptime monitors)
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
   const isDbConnected = mongoose.connection.readyState === 1;
+  let students = 0;
+  let users = 0;
+  if (isDbConnected) {
+    try {
+      const Student = require('./models/Student');
+      const User = require('./models/User');
+      students = await Student.countDocuments();
+      users = await User.countDocuments();
+    } catch (e) {}
+  }
   res.json({
     status: 'ok',
     database: isDbConnected ? 'connected' : 'disconnected',
+    students,
+    users,
     message: isDbConnected ? 'System healthy' : 'Database not connected. Please verify MONGO_URI in Render Environment Variables.'
   });
 });
