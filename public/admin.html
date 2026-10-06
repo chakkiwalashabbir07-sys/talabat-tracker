@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard & Reports - Talabat Mobile Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <!-- Top Navigation Header -->
+  <nav class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+    <div class="flex items-center gap-3">
+      <div class="p-2.5 bg-blue-600 rounded-xl text-white shadow-md shadow-blue-500/20">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-lg font-black text-slate-800 leading-tight">Admin Dashboard & Reports Console</h1>
+        <p class="text-xs text-slate-500">Talabat Mobile Phone Tracking System</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/index.html" class="text-xs bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+        <span>Gate Terminal Scanner</span>
+      </a>
+      <button onclick="logout()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3.5 py-2 rounded-xl font-bold transition">Logout</button>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 flex-1 w-full">
+
+    <!-- 5 Real-Time Summary Dashboard Metric Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <!-- Total Talabat -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <p class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Total Talabat</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <p id="statTotal" class="text-2xl sm:text-3xl font-black text-slate-800">--</p>
+          <span class="p-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold">All</span>
+        </div>
+      </div>
+
+      <!-- Submitted (IN) -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <p class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Phones In Office (IN)</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <p id="statIn" class="text-2xl sm:text-3xl font-black text-emerald-600">--</p>
+          <span class="p-2 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-bold">Submitted</span>
+        </div>
+      </div>
+
+      <!-- Returned (OUT) -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <p class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Phones Returned (OUT)</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <p id="statOut" class="text-2xl sm:text-3xl font-black text-rose-600">--</p>
+          <span class="p-2 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold">Returned</span>
+        </div>
+      </div>
+
+      <!-- Not Submitted -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <p class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Never Submitted</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <p id="statNotSubmitted" class="text-2xl sm:text-3xl font-black text-amber-600">--</p>
+          <span class="p-2 bg-amber-50 text-amber-600 rounded-xl text-xs font-bold">Pending</span>
+        </div>
+      </div>
+
+      <!-- Held in Office -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between col-span-2 sm:col-span-1">
+        <p class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Total Held by Office</p>
+        <div class="flex items-baseline justify-between mt-2">
+          <p id="statHeld" class="text-2xl sm:text-3xl font-black text-indigo-600">--</p>
+          <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold">In Custody</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area: Left Control Panel + Right Reports Roster -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left Column: Master Excel Import & Quick Search -->
+      <div class="space-y-6">
+
+        <!-- Master Excel Import Card -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="border-b pb-3 flex justify-between items-center">
+            <div>
+              <h2 class="text-sm font-bold text-slate-800">Master Student Import (.xlsx)</h2>
+              <p class="text-[11px] text-slate-500">Syncs Talabat, Mobile Pouch # & Floor</p>
+            </div>
+            <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-mono font-bold">Excel</span>
+          </div>
+
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+            <p class="font-bold text-slate-700">Supported Headers:</p>
+            <p class="text-[10px] font-mono text-slate-500 leading-relaxed">Tr No, ITSID, Name, Darajah, Floor, Room, Mobile (Pouch #)</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1.5">Select Excel File</label>
+            <input type="file" id="excelFile" accept=".xlsx, .xls"
+              class="block w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-200 rounded-lg p-1.5" />
+          </div>
+
+          <div id="uploadStatus" class="hidden text-xs p-3 rounded-lg font-semibold"></div>
+
+          <button id="uploadBtn" onclick="uploadExcel()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2">
+            <span>Process & Update Students</span>
+          </button>
+        </div>
+
+        <!-- Student Quick Lookup Card -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+          <h2 class="text-sm font-bold text-slate-800 border-b pb-2">Student Fast Verification</h2>
+          <div class="flex gap-2">
+            <input type="text" id="checkTrno" placeholder="TR No or ITS ID..." class="flex-1 px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" onkeypress="if(event.key==='Enter') lookupStudent()">
+            <button onclick="lookupStudent()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold">Search</button>
+          </div>
+          <div id="lookupResult" class="hidden text-xs p-3 rounded-xl border"></div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Filterable Reports & History Tables -->
+      <div class="lg:col-span-2 space-y-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+
+          <!-- View Tab Buttons & Export Controls -->
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-4">
+            <!-- Table Tabs -->
+            <div class="flex gap-2">
+              <button id="tabHistoryBtn" onclick="switchTableTab('history')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow transition">
+                Transaction History Log
+              </button>
+              <button id="tabInBtn" onclick="switchTableTab('in')" class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">
+                In Office (IN)
+              </button>
+              <button id="tabNotSubBtn" onclick="switchTableTab('notsubmitted')" class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">
+                Not Submitted
+              </button>
+            </div>
+
+            <!-- Export Buttons -->
+            <div class="flex items-center gap-2">
+              <button onclick="exportData('xlsx')" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl font-bold transition flex items-center gap-1.5 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>Export Excel</span>
+              </button>
+              <button onclick="exportData('csv')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3 py-2 rounded-xl font-bold transition">
+                CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Comprehensive Search & Filter Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pt-1">
+            <div class="sm:col-span-2">
+              <input type="text" id="reportSearch" placeholder="Search name, TR, ITS, or pouch..."
+                class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                oninput="debounceReportFilter()">
+            </div>
+            <div>
+              <select id="actionFilter" onchange="applyReportFilter()" class="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option value="">All Actions (IN & OUT)</option>
+                <option value="IN">Mobile IN (Submitted)</option>
+                <option value="OUT">Mobile OUT (Returned)</option>
+              </select>
+            </div>
+            <div>
+              <button onclick="applyReportFilter()" class="w-full text-xs bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg font-bold transition">Filter</button>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="overflow-x-auto max-h-[520px] rounded-xl border border-slate-200">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead id="reportTableHead" class="sticky top-0 bg-slate-50 shadow-sm text-slate-500 uppercase text-[10px] tracking-wider">
+                <!-- Dynamically Populated Header -->
+              </thead>
+              <tbody id="reportTableBody" class="divide-y text-slate-700">
+                <tr><td colspan="7" class="p-6 text-center text-slate-400">Loading records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'history';
+    let filterDebounce = null;
+
+    // 1. Auth Guard
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return null;
+      }
+      return token;
+    }
+
+    // 2. Fetch Live Dashboard Metrics
+    async function fetchDashboardMetrics() {
+      const token = checkAuth();
+      if (!token) return;
+
+      try {
+        const res = await fetch('/api/student/metrics', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401 || res.status === 403) return handleAuthFailure();
+
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('statTotal').innerText = data.total;
+          document.getElementById('statIn').innerText = data.inCount;
+          document.getElementById('statOut').innerText = data.outCount;
+          document.getElementById('statNotSubmitted').innerText = data.notSubmittedCount;
+          document.getElementById('statHeld').innerText = data.heldInOffice;
+        }
+      } catch (err) {
+        console.error('Metrics fetch error:', err);
+      }
+    }
+
+    // 3. Tab Switching (History vs In Office vs Not Submitted)
+    function switchTableTab(tab) {
+      currentTab = tab;
+      const btnHist = document.getElementById('tabHistoryBtn');
+      const btnIn = document.getElementById('tabInBtn');
+      const btnNot = document.getElementById('tabNotSubBtn');
+      const actionFilter = document.getElementById('actionFilter');
+
+      const activeClass = 'px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow transition';
+      const inactiveClass = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition';
+
+      btnHist.className = tab === 'history' ? activeClass : inactiveClass;
+      btnIn.className = tab === 'in' ? activeClass : inactiveClass;
+      btnNot.className = tab === 'notsubmitted' ? activeClass : inactiveClass;
+
+      if (tab === 'history') {
+        actionFilter.parentElement.classList.remove('hidden');
+      } else {
+        actionFilter.parentElement.classList.add('hidden');
+      }
+
+      loadActiveTable();
+    }
+
+    function debounceReportFilter() {
+      clearTimeout(filterDebounce);
+      filterDebounce = setTimeout(() => loadActiveTable(), 300);
+    }
+
+    function applyReportFilter() {
+      loadActiveTable();
+    }
+
+    // 4. Load Active Table View
+    async function loadActiveTable() {
+      const token = checkAuth();
+      if (!token) return;
+
+      const search = document.getElementById('reportSearch').value.trim();
+      const action = document.getElementById('actionFilter').value;
+      const thead = document.getElementById('reportTableHead');
+      const tbody = document.getElementById('reportTableBody');
+
+      tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400">Loading data...</td></tr>';
+
+      try {
+        if (currentTab === 'history') {
+          // Transaction Log Table
+          thead.innerHTML = `
+            <tr class="border-b">
+              <th class="p-2.5">Date / Time</th>
+              <th class="p-2.5">Action</th>
+              <th class="p-2.5">TR No</th>
+              <th class="p-2.5">Talabat Name</th>
+              <th class="p-2.5">Pouch #</th>
+              <th class="p-2.5">Floor / Room</th>
+              <th class="p-2.5">Staff</th>
+            </tr>
+          `;
+
+          const query = new URLSearchParams({ search, action, limit: 100 });
+          const res = await fetch(`/api/movement/history?${query.toString()}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+
+          if (data.success && data.logs && data.logs.length > 0) {
+            tbody.innerHTML = data.logs.map(l => {
+              const dt = l.timestamp ? new Date(l.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-';
+              const actionBadge = l.action === 'IN'
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">MOBILE IN</span>'
+                : '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-300">MOBILE OUT</span>';
+
+              return `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                  <td class="p-2.5 text-slate-500 font-mono text-[11px]">${dt}</td>
+                  <td class="p-2.5">${actionBadge}</td>
+                  <td class="p-2.5 font-bold text-blue-600 font-mono">${l.trno}</td>
+                  <td class="p-2.5 font-semibold text-slate-800">${l.student_name || '-'}</td>
+                  <td class="p-2.5 font-bold text-amber-700 font-mono bg-amber-50/50">#${l.pouch_no || '-'}</td>
+                  <td class="p-2.5 text-slate-600">${l.floor || '-'} (${l.roomno || '-'})</td>
+                  <td class="p-2.5 text-slate-500">${l.staff_username || 'staff'}</td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400">No transaction logs match current filters.</td></tr>';
+          }
+
+        } else if (currentTab === 'in') {
+          // Students with Phone Currently IN Office
+          thead.innerHTML = `
+            <tr class="border-b">
+              <th class="p-2.5">TR No</th>
+              <th class="p-2.5">Talabat Name</th>
+              <th class="p-2.5">ITS ID</th>
+              <th class="p-2.5">Pouch #</th>
+              <th class="p-2.5">Room</th>
+              <th class="p-2.5">Darajah</th>
+              <th class="p-2.5">Floor</th>
+            </tr>
+          `;
+
+          const res = await fetch('/api/student/in', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+
+          let filtered = data.students || [];
+          if (search) {
+            const sLower = search.toLowerCase();
+            filtered = filtered.filter(s =>
+              s.name.toLowerCase().includes(sLower) ||
+              String(s.trno).includes(sLower) ||
+              String(s.itsid || '').includes(sLower) ||
+              String(s.pouch_no || '').includes(sLower)
+            );
+          }
+
+          if (filtered.length > 0) {
+            tbody.innerHTML = filtered.map(s => `
+              <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                <td class="p-2.5 font-bold text-blue-600 font-mono">${s.trno}</td>
+                <td class="p-2.5 font-semibold text-slate-800">${s.name}</td>
+                <td class="p-2.5 text-slate-500 font-mono">${s.itsid || '-'}</td>
+                <td class="p-2.5 font-bold text-amber-700 font-mono bg-amber-50/50">#${s.pouch_no || s.mobile || '-'}</td>
+                <td class="p-2.5 text-slate-600">${s.roomno || '-'}</td>
+                <td class="p-2.5 text-slate-600">${s.darajah || '-'}</td>
+                <td class="p-2.5 text-slate-500">${s.floor || '-'}</td>
+              </tr>
+            `).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400">No students currently have phones in office custody.</td></tr>';
+          }
+
+        } else if (currentTab === 'notsubmitted') {
+          // Students Who Have Not Submitted Their Phones
+          thead.innerHTML = `
+            <tr class="border-b">
+              <th class="p-2.5">TR No</th>
+              <th class="p-2.5">Talabat Name</th>
+              <th class="p-2.5">ITS ID</th>
+              <th class="p-2.5">Pouch #</th>
+              <th class="p-2.5">Room</th>
+              <th class="p-2.5">Darajah</th>
+              <th class="p-2.5">Floor</th>
+            </tr>
+          `;
+
+          const res = await fetch(`/api/student/not-submitted?search=${encodeURIComponent(search)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+
+          if (data.success && data.students && data.students.length > 0) {
+            tbody.innerHTML = data.students.map(s => `
+              <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                <td class="p-2.5 font-bold text-blue-600 font-mono">${s.trno}</td>
+                <td class="p-2.5 font-semibold text-slate-800">${s.name}</td>
+                <td class="p-2.5 text-slate-500 font-mono">${s.itsid || '-'}</td>
+                <td class="p-2.5 font-bold text-amber-700 font-mono bg-amber-50/50">#${s.pouch_no || s.mobile || '-'}</td>
+                <td class="p-2.5 text-slate-600">${s.roomno || '-'}</td>
+                <td class="p-2.5 text-slate-600">${s.darajah || '-'}</td>
+                <td class="p-2.5 text-slate-500">${s.floor || '-'}</td>
+              </tr>
+            `).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400">All students have submitted their phones!</td></tr>';
+          }
+        }
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-rose-500">Error loading table data: ${e.message}</td></tr>`;
+      }
+    }
+
+    // 5. Export Report (Excel / CSV)
+    function exportData(format = 'xlsx') {
+      const token = checkAuth();
+      if (!token) return;
+      const search = document.getElementById('reportSearch').value.trim();
+      const action = document.getElementById('actionFilter').value;
+
+      const query = new URLSearchParams({ format, search, action });
+      // Direct file download using fetch blob
+      fetch(`/api/movement/export?${query.toString()}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Export failed');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mobile_tracking_report_${Date.now()}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(err => alert('Export error: ' + err.message));
+    }
+
+    // 6. Master Excel Import
+    async function uploadExcel() {
+      const token = checkAuth();
+      if (!token) return;
+
+      const fileInput = document.getElementById('excelFile');
+      if (!fileInput.files[0]) return alert('Please select an Excel file to upload.');
+
+      const statusBox = document.getElementById('uploadStatus');
+      const uploadBtn = document.getElementById('uploadBtn');
+
+      statusBox.className = 'text-xs p-3 rounded-lg font-semibold bg-blue-50 text-blue-700 border border-blue-200';
+      statusBox.innerText = 'Processing file and updating student records...';
+      statusBox.classList.remove('hidden');
+      uploadBtn.disabled = true;
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/api/student/upload-excel', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+
+        if (res.status === 401 || res.status === 403) return handleAuthFailure();
+
+        const data = await res.json();
+        if (data.success) {
+          statusBox.className = 'text-xs p-3 rounded-lg font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
+          statusBox.innerText = data.message;
+          fileInput.value = '';
+          fetchDashboardMetrics();
+          loadActiveTable();
+        } else {
+          statusBox.className = 'text-xs p-3 rounded-lg font-semibold bg-rose-50 text-rose-700 border border-rose-200';
+          statusBox.innerText = data.message || 'Upload failed.';
+        }
+      } catch (err) {
+        statusBox.className = 'text-xs p-3 rounded-lg font-semibold bg-rose-50 text-rose-700 border border-rose-200';
+        statusBox.innerText = 'Upload error: ' + err.message;
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    }
+
+    // 7. Student Quick Lookup
+    async function lookupStudent() {
+      const token = checkAuth();
+      if (!token) return;
+
+      const input = document.getElementById('checkTrno').value.trim();
+      const resBox = document.getElementById('lookupResult');
+      if (!input) return;
+
+      try {
+        const res = await fetch(`/api/student/${encodeURIComponent(input)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        resBox.classList.remove('hidden');
+        if (data.success && data.student) {
+          const s = data.student;
+          const status = s.mobile_status || s.current_status || 'NOT_SUBMITTED';
+          const isSubmitted = status === 'IN';
+
+          resBox.className = 'text-xs p-3 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-900 space-y-1.5';
+          resBox.innerHTML = `
+            <div class="font-black text-sm text-slate-800">${s.name}</div>
+            <div>TR No: <b class="font-mono text-blue-700">${s.trno}</b> | ITS: <b class="font-mono">${s.itsid || 'N/A'}</b></div>
+            <div>Mobile Pouch #: <b class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded-lg border border-amber-300 font-mono font-bold">#${s.pouch_no || s.mobile || 'None'}</b></div>
+            <div>Room: <b>${s.roomno}</b> | Darajah: <b>${s.darajah}</b> | Floor: <b>${s.floor || 'N/A'}</b></div>
+            <div class="pt-1">Mobile Status: <span class="px-2 py-0.5 rounded text-[11px] font-bold ${isSubmitted ? 'bg-emerald-200 text-emerald-800' : 'bg-rose-200 text-rose-800'}">${isSubmitted ? 'IN (In Office Custody)' : 'OUT / Not in Office'}</span></div>
+          `;
+        } else {
+          resBox.className = 'text-xs p-3 rounded-xl border bg-rose-50 border-rose-200 text-rose-700';
+          resBox.innerText = data.message || 'Student not found.';
+        }
+      } catch (err) {
+        resBox.className = 'text-xs p-3 rounded-xl border bg-rose-50 border-rose-200 text-rose-700';
+        resBox.innerText = 'Search error: ' + err.message;
+      }
+    }
+
+    function handleAuthFailure() {
+      localStorage.removeItem('token');
+      alert('Session expired or access denied. Please log in again.');
+      window.location.href = '/login.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
+    }
+
+    // Initialize Dashboard
+    if (checkAuth()) {
+      fetchDashboardMetrics();
+      loadActiveTable();
+    }
+  </script>
+</body>
+</html>
