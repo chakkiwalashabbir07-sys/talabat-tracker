@@ -3,47 +3,122 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Talabat Mobile Tracker - Scanner & Manual Entry</title>
+  <title>Talabat Mobile Tracker | Gate Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- HTML5 QR / Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
   <style>
     /* Styling for the camera video scanner feed */
     #reader video {
       width: 100% !important;
-      border-radius: 0.75rem;
+      border-radius: 1rem;
       object-fit: cover;
     }
     #reader {
       border: none !important;
     }
     #reader__scan_region {
-      background: rgba(15, 23, 42, 0.4);
+      background: rgba(3, 7, 18, 0.6);
+      border-radius: 0.75rem;
+    }
+    /* Animated Laser Scanner Line */
+    @keyframes scanBeam {
+      0% { top: 5%; opacity: 0.8; }
+      50% { top: 90%; opacity: 1; }
+      100% { top: 5%; opacity: 0.8; }
+    }
+    .scanner-beam {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #3b82f6, #60a5fa, transparent);
+      box-shadow: 0 0 15px #3b82f6, 0 0 30px #60a5fa;
+      animation: scanBeam 2.4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 20;
+    }
+    /* Ambient background mesh */
+    .bg-terminal {
+      background-color: #030712;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.14) 0px, transparent 45%),
+        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 40%),
+        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 45%);
+    }
+    .grid-pattern {
+      background-size: 32px 32px;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+    .glass-card-elevated {
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+<body class="bg-terminal grid-pattern text-slate-100 min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white antialiased">
 
   <!-- Top Navigation Header -->
-  <header class="bg-slate-900 border-b border-slate-800 px-4 sm:px-6 py-3.5 flex justify-between items-center sticky top-0 z-40 backdrop-blur-md">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+  <header class="bg-slate-950/80 border-b border-slate-800/80 px-4 sm:px-8 py-3.5 flex justify-between items-center sticky top-0 z-40 backdrop-blur-xl">
+    <div class="flex items-center gap-3.5">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/25 ring-1 ring-white/20">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
         </svg>
       </div>
       <div>
-        <h1 class="font-extrabold text-base sm:text-lg text-white tracking-tight flex items-center gap-2">
-          Talabat Mobile Tracker
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Live</span>
-        </h1>
-        <p class="text-[11px] text-slate-400">Phone IN / OUT Verification Terminal</p>
+        <div class="flex items-center gap-2">
+          <h1 class="font-black text-base sm:text-lg text-white tracking-tight">Talabat Tracker</h1>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            LIVE TERMINAL
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400 font-medium">Gate Security & Phone Custody Checkpoint</p>
       </div>
     </div>
+    
     <div class="flex items-center gap-2 sm:gap-3">
-      <span id="staffBadge" class="hidden sm:inline-block text-xs bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 font-medium">Staff: Loading...</span>
-      <a href="/admin.html" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-2 rounded-lg font-semibold transition">Dashboard</a>
-      <button onclick="logout()" class="text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-3 py-2 rounded-lg font-semibold transition">Logout</button>
+      <div id="staffBadge" class="hidden sm:inline-flex items-center gap-1.5 text-xs bg-slate-900 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-800 font-medium shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+        <span>Staff: Loading...</span>
+      </div>
+      <a href="/admin.html" class="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-750 text-slate-200 px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 shadow-sm hover:border-slate-700">
+        <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <span>Console</span>
+      </a>
+      <button onclick="logout()" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+        </svg>
+        <span class="hidden sm:inline">Logout</span>
+      </button>
     </div>
   </header>
 
@@ -51,21 +126,24 @@
   <main class="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 space-y-6">
 
     <!-- Notification / Alert Toast Box -->
-    <div id="alertBox" class="hidden rounded-xl p-4 text-xs font-semibold flex items-center justify-between transition-all duration-300 border shadow-lg">
-      <span id="alertMsg"></span>
-      <button onclick="hideAlert()" class="ml-3 text-slate-400 hover:text-white">&times;</button>
+    <div id="alertBox" class="hidden rounded-2xl p-4 text-xs font-semibold flex items-center justify-between transition-all duration-300 border shadow-2xl backdrop-blur-md animate-fadeIn">
+      <div class="flex items-center gap-2.5">
+        <span id="alertIcon" class="text-base">🔔</span>
+        <span id="alertMsg"></span>
+      </div>
+      <button onclick="hideAlert()" class="ml-3 text-slate-400 hover:text-white text-lg leading-none">&times;</button>
     </div>
 
     <!-- Mode Selector Tabs: Method A (Scanner) vs Method B (Manual Entry) -->
-    <div class="bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 flex gap-1.5 shadow-inner">
-      <button id="tabScanBtn" onclick="switchMode('scan')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 bg-blue-600 text-white shadow-md transition">
+    <div class="glass-panel p-1.5 rounded-2xl flex gap-1.5 shadow-inner">
+      <button id="tabScanBtn" onclick="switchMode('scan')" class="flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 transition-all duration-200">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
         </svg>
         <span>Barcode / QR Scanner</span>
       </button>
 
-      <button id="tabManualBtn" onclick="switchMode('manual')" class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition">
+      <button id="tabManualBtn" onclick="switchMode('manual')" class="flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all duration-200">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
@@ -75,65 +153,98 @@
 
     <!-- METHOD A: CAMERA SCANNER & HARDWARE SCANNER SECTION -->
     <div id="scanSection" class="space-y-4">
+      
       <!-- Hardware / Physical Barcode Scanner Auto-Input -->
-      <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-3">
+      <div class="glass-panel p-5 sm:p-6 rounded-3xl space-y-3.5 ring-1 ring-white/5">
         <div class="flex justify-between items-center">
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 12h10M7 17h10M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"></path>
+            </svg>
             Barcode / ID Card Scanner
           </label>
-          <span class="text-[11px] text-blue-400 font-mono bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">Auto-detecting Barcode / ITS / TR</span>
+          <span class="text-[10px] text-blue-400 font-mono bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20 font-bold flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span>
+            Auto-Detect Active
+          </span>
         </div>
+        
         <div class="flex gap-2">
           <div class="relative flex-1">
-            <input type="text" id="barcodeInput" placeholder="Scan student ID barcode or type TR / ITS..." autofocus autocomplete="off"
-              class="w-full bg-slate-950 border border-slate-700 text-white text-base sm:text-lg pl-4 pr-10 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+            <input type="text" id="barcodeInput" placeholder="Scan barcode or enter TR / ITS ID..." autofocus autocomplete="off"
+              class="w-full bg-slate-950/90 border border-slate-700/80 text-white text-base sm:text-lg pl-4 pr-10 py-3.5 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition shadow-inner font-mono"
               onkeypress="if(event.key==='Enter') processBarcodeScan(this.value)">
-            <button onclick="document.getElementById('barcodeInput').value=''; document.getElementById('barcodeInput').focus();" class="absolute right-3 top-3.5 text-slate-500 hover:text-slate-300 text-sm">&times;</button>
+            <button onclick="document.getElementById('barcodeInput').value=''; document.getElementById('barcodeInput').focus();" class="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300 text-lg">&times;</button>
           </div>
-          <button onclick="processBarcodeScan(document.getElementById('barcodeInput').value)" class="bg-blue-600 hover:bg-blue-700 font-bold px-5 py-3 rounded-xl text-xs sm:text-sm text-white shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5">
+          <button onclick="processBarcodeScan(document.getElementById('barcodeInput').value)" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold px-6 py-3.5 rounded-2xl text-xs sm:text-sm text-white shadow-xl shadow-blue-600/30 active:scale-[0.98] transition flex items-center gap-2">
             <span>Find</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
           </button>
         </div>
+        <p class="text-[11px] text-slate-500 flex items-center gap-1.5">
+          <span class="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400">[Enter]</span>
+          <span>Plug-and-play USB scanner auto-submits on card tap</span>
+        </p>
       </div>
 
-      <!-- Camera Viewfinder Toggle Card -->
-      <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
-        <div class="p-4 bg-slate-850 border-b border-slate-800 flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            <h2 class="text-xs sm:text-sm font-bold text-slate-200">Device Camera Scanner (Phone / Webcam)</h2>
+      <!-- Camera Viewfinder Card -->
+      <div class="glass-panel rounded-3xl overflow-hidden ring-1 ring-white/5">
+        <div class="p-4 sm:p-5 bg-slate-900/60 border-b border-slate-800/80 flex justify-between items-center">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xs sm:text-sm font-bold text-slate-200">Smartphone / Webcam Scanner</h2>
+              <p class="text-[10px] text-slate-500">Live camera QR & Code-128 decoder</p>
+            </div>
           </div>
+          
           <div class="flex items-center gap-2">
-            <button id="torchBtn" onclick="toggleTorch()" class="hidden text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded-lg border border-slate-700 transition">💡 Flash</button>
-            <button id="cameraToggleBtn" onclick="toggleCameraScanner()" class="text-xs font-bold px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow transition flex items-center gap-1.5">
+            <button id="torchBtn" onclick="toggleTorch()" class="hidden text-xs bg-slate-850 hover:bg-slate-800 text-amber-400 px-3 py-2 rounded-xl border border-amber-500/30 transition shadow-sm font-bold">💡 Flash</button>
+            <button id="cameraToggleBtn" onclick="toggleCameraScanner()" class="text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-lg shadow-indigo-600/25 transition active:scale-[0.98] flex items-center gap-1.5">
               <span id="cameraBtnText">Start Camera</span>
             </button>
           </div>
         </div>
 
         <!-- Camera Video Feed Container -->
-        <div id="cameraContainer" class="hidden p-4 bg-slate-950 flex flex-col items-center">
-          <div id="reader" class="w-full max-w-sm rounded-xl overflow-hidden shadow-2xl bg-black"></div>
-          <p class="text-[11px] text-slate-400 mt-2 text-center">Point camera at the Barcode or QR Code on student ID card.</p>
+        <div id="cameraContainer" class="hidden p-4 sm:p-6 bg-slate-950/80 flex flex-col items-center relative">
+          <!-- Animated HUD Laser Scanning Effect -->
+          <div class="relative w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800">
+            <div class="scanner-beam"></div>
+            <div id="reader" class="w-full"></div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-3 text-center flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Point lens directly at barcode on student badge or mobile screen
+          </p>
         </div>
       </div>
     </div>
 
     <!-- METHOD B: MANUAL SEARCH / ENTRY SECTION -->
     <div id="manualSection" class="hidden space-y-4">
-      <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+      <div class="glass-panel p-5 sm:p-6 rounded-3xl space-y-4 ring-1 ring-white/5">
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
             Manual Search (Name, TR No, ITS ID, or Pouch #)
           </label>
           <div class="relative">
-            <input type="text" id="manualSearchInput" placeholder="Type Talabat name (e.g. Mustafa), TR No, or ITS ID..."
-              class="w-full bg-slate-950 border border-slate-700 text-white text-sm sm:text-base pl-4 pr-10 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <input type="text" id="manualSearchInput" placeholder="Type Talabat name (e.g. Mustafa), TR No, or Pouch #..."
+              class="w-full bg-slate-950/90 border border-slate-700/80 text-white text-sm sm:text-base pl-11 pr-10 py-3.5 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition font-sans shadow-inner"
               oninput="debounceSearch(this.value)">
-            <div id="searchSpinner" class="hidden absolute right-3 top-3.5 text-slate-400">
+            <div id="searchSpinner" class="hidden absolute right-3.5 top-4 text-slate-400">
               <svg class="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -143,41 +254,55 @@
         </div>
 
         <!-- Search Results List -->
-        <div id="searchResultsList" class="hidden max-h-72 overflow-y-auto rounded-xl border border-slate-800 divide-y divide-slate-800/80 bg-slate-950/60"></div>
+        <div id="searchResultsList" class="hidden max-h-80 overflow-y-auto rounded-2xl border border-slate-800 divide-y divide-slate-800/80 bg-slate-950/80 shadow-2xl"></div>
       </div>
     </div>
 
-    <!-- TALABAT IDENTIFICATION & MOBILE STATUS ACTION CARD -->
-    <div id="studentCard" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6">
+    <!-- HERO COMPONENT: TALABAT IDENTIFICATION & MOBILE STATUS ACTION CARD -->
+    <div id="studentCard" class="hidden glass-card-elevated rounded-3xl p-6 sm:p-8 space-y-6 ring-1 ring-blue-500/20 animate-fadeIn">
+      
       <!-- Card Header: Profile & Live Status Badge -->
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800/80 pb-5">
         <div>
-          <div class="flex items-center gap-2.5">
-            <h2 id="stName" class="text-xl sm:text-2xl font-black text-white">Student Name</h2>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-black text-white text-base shadow-md">
+              <span id="stInitials">T</span>
+            </div>
+            <div>
+              <h2 id="stName" class="text-xl sm:text-2xl font-black text-white tracking-tight">Student Name</h2>
+              <p id="stDetails" class="text-xs text-slate-400 mt-0.5 font-medium font-mono">TR No: -- | ITS: -- | Room: -- | Darajah: --</p>
+            </div>
           </div>
-          <p id="stDetails" class="text-xs text-slate-400 mt-1 font-medium">TR No: -- | ITS: -- | Room: -- | Darajah: --</p>
         </div>
-        <div id="stStatusBadge" class="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border">
+        <div id="stStatusBadge" class="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border shadow-md">
           Status
         </div>
       </div>
 
       <!-- Mobile Pouch Box (High Visibility For Gate Staff) -->
-      <div class="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-slate-950 border border-amber-500/40 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-lg">
-        <div class="flex items-center gap-4">
-          <div class="p-3 bg-amber-500/20 text-amber-400 rounded-2xl border border-amber-500/30">
-            <svg class="w-8 h-8 sm:w-9 sm:h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-slate-950/80 border-2 border-amber-500/40 rounded-3xl p-5 sm:p-6 flex items-center justify-between shadow-2xl relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        
+        <div class="flex items-center gap-4 sm:gap-5">
+          <div class="p-3.5 sm:p-4 bg-amber-500/20 text-amber-400 rounded-2xl border border-amber-500/30 shadow-inner">
+            <svg class="w-9 h-9 sm:w-11 sm:h-11" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
             </svg>
           </div>
           <div>
-            <p class="text-[11px] uppercase font-extrabold text-amber-400 tracking-wider">Mobile Pouch Number</p>
-            <p id="stPouch" class="text-3xl sm:text-4xl font-black text-amber-300 leading-none mt-1">--</p>
+            <p class="text-[11px] uppercase font-black text-amber-400 tracking-widest flex items-center gap-1.5">
+              <span>ASSIGNED MOBILE POUCH</span>
+            </p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-lg font-bold text-amber-400/80">#</span>
+              <p id="stPouch" class="text-4xl sm:text-5xl font-black text-amber-300 leading-none drop-shadow-[0_0_15px_rgba(251,191,36,0.3)]">--</p>
+            </div>
           </div>
         </div>
+        
         <div class="text-right">
-          <p class="text-[10px] uppercase font-bold text-slate-400">Hostel Floor</p>
-          <p id="stFloor" class="text-xs sm:text-sm font-bold text-slate-200 mt-0.5">--</p>
+          <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Hostel Location</span>
+          <p id="stFloor" class="text-xs sm:text-sm font-bold text-slate-200 mt-1 bg-slate-900/80 px-3 py-1 rounded-xl border border-slate-800">--</p>
         </div>
       </div>
 
@@ -185,63 +310,68 @@
       <div id="activeSubmissionBox" class="hidden bg-blue-950/40 border border-blue-500/30 rounded-2xl p-4 text-xs space-y-1.5 text-blue-200">
         <div class="flex items-center gap-2 font-bold text-blue-400 text-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          <span>Current Phone in Office Custody:</span>
+          <span>Office Custody Record:</span>
         </div>
-        <div id="activeLogDetails" class="text-slate-300">Submitted on: -- | Received by: --</div>
+        <div id="activeLogDetails" class="text-slate-300 font-medium">Submitted on: -- | Received by: --</div>
       </div>
 
       <!-- Transaction Confirmation Form -->
       <div id="actionArea" class="space-y-4 pt-1">
 
         <!-- Action Confirmation Buttons (Automatic Status Driven) -->
-        <div class="flex gap-3 pt-2">
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
           <!-- Submit Phone (Mobile IN) Button -->
-          <button id="btnMobileIn" onclick="confirmTransaction('IN')" class="flex-1 py-4 rounded-2xl font-black text-base bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-950/60 transition flex items-center justify-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button id="btnMobileIn" onclick="confirmTransaction('IN')" class="flex-1 py-4 sm:py-4.5 rounded-2xl font-black text-base bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-2xl shadow-emerald-950/80 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2.5 border border-emerald-400/30 ring-2 ring-emerald-500/20">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
             </svg>
-            <span>CONFIRM MOBILE IN (PHONE SUBMITTED)</span>
+            <span>CONFIRM MOBILE IN (SUBMITTED)</span>
           </button>
 
           <!-- Return Phone (Mobile OUT) Button -->
-          <button id="btnMobileOut" onclick="confirmTransaction('OUT')" class="flex-1 py-4 rounded-2xl font-black text-base bg-rose-600 hover:bg-rose-500 text-white shadow-xl shadow-rose-950/60 transition flex items-center justify-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button id="btnMobileOut" onclick="confirmTransaction('OUT')" class="flex-1 py-4 sm:py-4.5 rounded-2xl font-black text-base bg-gradient-to-r from-rose-600 via-red-600 to-rose-600 hover:from-rose-500 hover:to-red-500 text-white shadow-2xl shadow-rose-950/80 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2.5 border border-rose-400/30 ring-2 ring-rose-500/20">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
             </svg>
-            <span>CONFIRM MOBILE OUT (RETURN PHONE)</span>
+            <span>CONFIRM MOBILE OUT (RETURNED)</span>
           </button>
         </div>
 
         <div class="flex justify-between items-center text-[11px] text-slate-500 px-1 pt-1">
-          <span>Logged-in Staff: <b id="currentStaffName" class="text-slate-400">staff</b></span>
-          <button onclick="dismissStudentCard()" class="text-slate-400 hover:text-white underline">Cancel / Clear</button>
+          <span>Active Staff: <b id="currentStaffName" class="text-slate-300 font-mono">staff</b></span>
+          <button onclick="dismissStudentCard()" class="text-slate-400 hover:text-white underline hover:no-underline transition">Cancel / Clear [Esc]</button>
         </div>
       </div>
     </div>
 
     <!-- RECENT TRANSACTIONS DRAWER -->
-    <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 shadow-xl space-y-3">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+    <div class="glass-panel rounded-3xl p-5 sm:p-6 space-y-4 ring-1 ring-white/5 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800/80 pb-3.5">
         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-          Recent Transactions Feed
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+          Live Gate Transactions Feed
         </h3>
-        <button onclick="fetchRecentLogs()" class="text-xs text-blue-400 hover:text-blue-300 font-semibold">Refresh</button>
+        <button onclick="fetchRecentLogs()" class="text-xs text-blue-400 hover:text-blue-300 font-bold flex items-center gap-1 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Refresh</span>
+        </button>
       </div>
 
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto rounded-xl">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
-            <tr class="text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-800/80">
-              <th class="py-2 px-2.5">Time</th>
-              <th class="py-2 px-2.5">Action</th>
-              <th class="py-2 px-2.5">Student</th>
-              <th class="py-2 px-2.5">Pouch #</th>
-              <th class="py-2 px-2.5">Staff</th>
+            <tr class="text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-800/80 bg-slate-950/40">
+              <th class="py-3 px-3">Time</th>
+              <th class="py-3 px-3">Action</th>
+              <th class="py-3 px-3">Talabat</th>
+              <th class="py-3 px-3">Pouch #</th>
+              <th class="py-3 px-3">Staff</th>
             </tr>
           </thead>
           <tbody id="recentLogsBody" class="divide-y divide-slate-800/60 text-slate-300">
-            <tr><td colspan="5" class="py-4 text-center text-slate-500">Loading recent activity...</td></tr>
+            <tr><td colspan="5" class="py-6 text-center text-slate-500">Loading recent activity...</td></tr>
           </tbody>
         </table>
       </div>
@@ -256,6 +386,13 @@
     let isCameraRunning = false;
     let searchTimeout = null;
     let loggedInUser = null;
+
+    // Keyboard ESC shortcut to clear card
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && currentStudent) {
+        dismissStudentCard();
+      }
+    });
 
     // Audio Beep for Barcode/QR Detection
     const audioContext = window.AudioContext || window.webkitAudioContext ? new (window.AudioContext || window.webkitAudioContext)() : null;
@@ -291,7 +428,10 @@
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         loggedInUser = payload.username || 'staff';
-        document.getElementById('staffBadge').innerText = `Staff: ${loggedInUser} (${payload.role || 'guard'})`;
+        document.getElementById('staffBadge').innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>Staff: <b class="text-white">${loggedInUser}</b> (${payload.role || 'guard'})</span>
+        `;
         document.getElementById('currentStaffName').innerText = loggedInUser;
       } catch (e) {
         loggedInUser = 'staff';
@@ -305,17 +445,20 @@
       const tabScanBtn = document.getElementById('tabScanBtn');
       const tabManualBtn = document.getElementById('tabManualBtn');
 
+      const activeClass = 'flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 transition-all duration-200';
+      const inactiveClass = 'flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all duration-200';
+
       if (mode === 'scan') {
         scanSection.classList.remove('hidden');
         manualSection.classList.add('hidden');
-        tabScanBtn.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 bg-blue-600 text-white shadow-md transition';
-        tabManualBtn.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition';
+        tabScanBtn.className = activeClass;
+        tabManualBtn.className = inactiveClass;
         document.getElementById('barcodeInput').focus();
       } else {
         scanSection.classList.add('hidden');
         manualSection.classList.remove('hidden');
-        tabManualBtn.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 bg-blue-600 text-white shadow-md transition';
-        tabScanBtn.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition';
+        tabManualBtn.className = activeClass;
+        tabScanBtn.className = inactiveClass;
         document.getElementById('manualSearchInput').focus();
         stopCameraScanner();
       }
@@ -325,13 +468,18 @@
     function showAlert(msg, isSuccess = true) {
       const box = document.getElementById('alertBox');
       const txt = document.getElementById('alertMsg');
+      const icon = document.getElementById('alertIcon');
+      
       box.className = isSuccess
-        ? 'rounded-xl p-4 text-xs font-semibold flex items-center justify-between border bg-emerald-950/80 border-emerald-500/40 text-emerald-200 shadow-lg'
-        : 'rounded-xl p-4 text-xs font-semibold flex items-center justify-between border bg-rose-950/80 border-rose-500/40 text-rose-200 shadow-lg';
+        ? 'rounded-2xl p-4 text-xs font-semibold flex items-center justify-between border bg-emerald-950/80 border-emerald-500/40 text-emerald-200 shadow-2xl backdrop-blur-md animate-fadeIn'
+        : 'rounded-2xl p-4 text-xs font-semibold flex items-center justify-between border bg-rose-950/80 border-rose-500/40 text-rose-200 shadow-2xl backdrop-blur-md animate-fadeIn';
+      
+      if (icon) icon.innerText = isSuccess ? '✅' : '⚠️';
       txt.innerText = msg;
       box.classList.remove('hidden');
       setTimeout(() => hideAlert(), 6000);
     }
+    
     function hideAlert() {
       document.getElementById('alertBox').classList.add('hidden');
     }
@@ -366,7 +514,7 @@
       }
 
       const qrConfig = {
-        fps: 15,
+        fps: 20,
         qrbox: { width: 250, height: 250 },
         aspectRatio: 1.0,
         formatsToSupport: [
@@ -389,11 +537,11 @@
 
         isCameraRunning = true;
         btnText.innerText = 'Stop Camera';
-        toggleBtn.className = 'text-xs font-bold px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white shadow transition flex items-center gap-1.5';
+        toggleBtn.className = 'text-xs font-bold px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white shadow transition flex items-center gap-1.5';
       } catch (err) {
         container.classList.add('hidden');
         btnText.innerText = 'Start Camera';
-        toggleBtn.className = 'text-xs font-bold px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow transition flex items-center gap-1.5';
+        toggleBtn.className = 'text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow transition flex items-center gap-1.5';
         showAlert('Camera access error: ' + (err.message || 'Permission denied. You can still use manual entry.'), false);
       }
     }
@@ -407,14 +555,14 @@
       }
       document.getElementById('cameraContainer').classList.add('hidden');
       document.getElementById('cameraBtnText').innerText = 'Start Camera';
-      document.getElementById('cameraToggleBtn').className = 'text-xs font-bold px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow transition flex items-center gap-1.5';
+      document.getElementById('cameraToggleBtn').className = 'text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow transition flex items-center gap-1.5';
     }
 
     let lastScannedCode = '';
     let lastScanTime = 0;
     function onScanSuccess(decodedText) {
       const now = Date.now();
-      // Debounce identical scans within 2 seconds
+      // Debounce identical scans within 2.5 seconds
       if (decodedText === lastScannedCode && (now - lastScanTime < 2500)) {
         return;
       }
@@ -425,7 +573,7 @@
     }
 
     function onScanFailure(error) {
-      // Periodic frame scanning errors are normal while seeking code
+      // Periodic frame scanning seeking
     }
 
     // 6. Method B: Manual Live Search
@@ -454,17 +602,22 @@
             resultsList.innerHTML = data.students.map(s => {
               const status = s.mobile_status || s.current_status || 'NOT_SUBMITTED';
               const statusBadge = status === 'IN'
-                ? '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">PHONE IN</span>'
-                : '<span class="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">PHONE OUT</span>';
+                ? '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/30">PHONE IN</span>'
+                : '<span class="text-[10px] font-bold text-rose-400 bg-rose-500/15 px-2.5 py-0.5 rounded-full border border-rose-500/30">PHONE OUT</span>';
 
               return `
-                <div onclick="selectStudentByTr(${s.trno})" class="p-3 hover:bg-slate-900 cursor-pointer flex items-center justify-between transition">
-                  <div>
-                    <p class="font-bold text-white text-sm">${s.name}</p>
-                    <p class="text-[11px] text-slate-400">TR: <b class="text-blue-400 font-mono">${s.trno}</b> | ITS: <b class="text-slate-300 font-mono">${s.itsid || '-'}</b> | Room: <b>${s.roomno}</b> | Floor: ${s.floor || '-'}</p>
+                <div onclick="selectStudentByTr(${s.trno})" class="p-3.5 hover:bg-slate-900/90 cursor-pointer flex items-center justify-between transition-colors border-b border-slate-900 last:border-0">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 text-blue-400 flex items-center justify-center font-bold text-xs font-mono">
+                      ${s.trno.toString().slice(-2)}
+                    </div>
+                    <div>
+                      <p class="font-bold text-white text-sm">${s.name}</p>
+                      <p class="text-[11px] text-slate-400 font-mono">TR: <b class="text-blue-400">${s.trno}</b> | ITS: <b class="text-slate-300">${s.itsid || '-'}</b> | Room: <b>${s.roomno}</b> | Floor: ${s.floor || '-'}</p>
+                    </div>
                   </div>
                   <div class="text-right flex flex-col items-end gap-1">
-                    <span class="text-xs font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Pouch #${s.pouch_no || s.mobile || 'N/A'}</span>
+                    <span class="text-xs font-black text-amber-300 bg-amber-500/15 px-2.5 py-0.5 rounded-lg border border-amber-500/30 font-mono">Pouch #${s.pouch_no || s.mobile || 'N/A'}</span>
                     ${statusBadge}
                   </div>
                 </div>
@@ -472,7 +625,7 @@
             }).join('');
             resultsList.classList.remove('hidden');
           } else {
-            resultsList.innerHTML = '<div class="p-4 text-center text-xs text-slate-400">No matching Talabat found.</div>';
+            resultsList.innerHTML = '<div class="p-5 text-center text-xs text-slate-400">No matching Talabat records found.</div>';
             resultsList.classList.remove('hidden');
           }
         } catch (e) {
@@ -507,9 +660,9 @@
 
         if (data.success && data.student) {
           displayStudentCard(data.student, data.activeLog);
-          showAlert(`Identified: ${data.student.name} (Pouch #${data.student.pouch_no || data.student.mobile || 'N/A'})`, true);
+          showAlert(`Student Identified: ${data.student.name} (Pouch #${data.student.pouch_no || data.student.mobile || 'N/A'})`, true);
         } else {
-          showAlert(data.message || `No student found matching "${identifier}".`, false);
+          showAlert(data.message || `No student record found matching "${identifier}".`, false);
         }
       } catch (err) {
         showAlert('Network error looking up student: ' + err.message, false);
@@ -526,21 +679,25 @@
       const subBox = document.getElementById('activeSubmissionBox');
       const subDetails = document.getElementById('activeLogDetails');
 
-      // Populate basic details
+      // Populate basic details & initials
       document.getElementById('stName').innerText = student.name;
+      const initials = student.name ? student.name.split(' ').map(n => n[0]).slice(0, 2).join('') : 'T';
+      const initEl = document.getElementById('stInitials');
+      if (initEl) initEl.innerText = initials;
+
       document.getElementById('stDetails').innerText = `TR No: ${student.trno} | ITS: ${student.itsid || 'N/A'} | Room: ${student.roomno} | Darajah: ${student.darajah}`;
       
       const pouchNo = student.pouch_no || student.mobile || 'None';
       document.getElementById('stPouch').innerText = pouchNo;
-      document.getElementById('stFloor').innerText = student.floor || 'N/A';
+      document.getElementById('stFloor').innerText = student.floor || 'Floor Not Set';
 
       // Automatic Status Detection:
       const status = student.mobile_status || student.current_status || 'NOT_SUBMITTED';
 
       if (status === 'IN') {
         // Phone is currently SUBMITTED in office custody -> Offer OUT action
-        badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
-        badge.innerText = '● IN (PHONE SUBMITTED)';
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1.5';
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span>IN (OFFICE CUSTODY)</span>';
 
         btnIn.classList.add('hidden');
         btnOut.classList.remove('hidden');
@@ -549,7 +706,7 @@
         if (activeLog) {
           const inTime = activeLog.timestamp ? new Date(activeLog.timestamp).toLocaleString() : 'Recent';
           subDetails.innerHTML = `
-            Submitted: <b>${inTime}</b> | Received by Staff: <b>${activeLog.staff_username || 'staff'}</b>
+            Submitted: <b>${inTime}</b> | Received by Staff: <b class="text-white">${activeLog.staff_username || 'staff'}</b>
           `;
           subBox.classList.remove('hidden');
         } else {
@@ -558,11 +715,11 @@
       } else {
         // Phone is OUT or NOT_SUBMITTED -> Offer IN action
         if (status === 'OUT') {
-          badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/40';
-          badge.innerText = '○ OUT (PHONE WITH TALABAT)';
+          badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center gap-1.5';
+          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-400"></span><span>OUT (WITH TALABAT)</span>';
         } else {
-          badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-slate-700/60 text-slate-300 border border-slate-600';
-          badge.innerText = 'NOT SUBMITTED YET';
+          badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-slate-700/60 text-slate-300 border border-slate-600 flex items-center gap-1.5';
+          badge.innerHTML = '<span>PENDING SUBMISSION</span>';
         }
 
         btnIn.classList.remove('hidden');
@@ -613,11 +770,11 @@
         const data = await res.json();
 
         if (res.ok && data.success) {
-          showAlert(data.message || `Transaction saved: Mobile ${action}`, true);
+          showAlert(data.message || `Transaction Completed: Mobile ${action}`, true);
           dismissStudentCard();
           fetchRecentLogs();
         } else {
-          showAlert(data.message || 'Transaction could not be saved.', false);
+          showAlert(data.message || 'Transaction could not be recorded.', false);
         }
       } catch (err) {
         showAlert('Error processing transaction: ' + err.message, false);
@@ -643,24 +800,24 @@
           tbody.innerHTML = data.logs.map(l => {
             const timeStr = l.timestamp ? new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--';
             const actionBadge = l.action === 'IN'
-              ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">MOBILE IN</span>'
-              : '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">MOBILE OUT</span>';
+              ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">MOBILE IN</span>'
+              : '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">MOBILE OUT</span>';
 
             return `
-              <tr class="hover:bg-slate-800/40 transition">
-                <td class="py-2.5 px-2.5 text-slate-400 font-mono text-[11px]">${timeStr}</td>
-                <td class="py-2.5 px-2.5">${actionBadge}</td>
-                <td class="py-2.5 px-2.5 font-bold text-white">${l.student_name || 'TR ' + l.trno}</td>
-                <td class="py-2.5 px-2.5 font-bold text-amber-400 font-mono">#${l.pouch_no || '-'}</td>
-                <td class="py-2.5 px-2.5 text-slate-400">${l.staff_username || 'staff'}</td>
+              <tr class="hover:bg-slate-900/60 transition-colors">
+                <td class="py-3 px-3 text-slate-400 font-mono text-[11px]">${timeStr}</td>
+                <td class="py-3 px-3">${actionBadge}</td>
+                <td class="py-3 px-3 font-bold text-white">${l.student_name || 'TR ' + l.trno}</td>
+                <td class="py-3 px-3 font-bold text-amber-300 font-mono">#${l.pouch_no || '-'}</td>
+                <td class="py-3 px-3 text-slate-400 font-mono text-[11px]">${l.staff_username || 'staff'}</td>
               </tr>
             `;
           }).join('');
         } else {
-          tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-500">No transactions recorded yet today.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-500">No transactions recorded yet today.</td></tr>';
         }
       } catch (e) {
-        console.error('Error loading recent logs:', e);
+        console.error('Error loading recent activity:', e);
       }
     }
 

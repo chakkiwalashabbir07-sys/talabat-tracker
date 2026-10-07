@@ -3,53 +3,203 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Login - Student Entry System</title>
+  <title>Portal Authentication | Talabat Mobile Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Ambient background gradient mesh */
+    .bg-mesh {
+      background-color: #030712;
+      background-image: 
+        radial-gradient(at 10% 20%, rgba(37, 99, 235, 0.18) 0px, transparent 50%),
+        radial-gradient(at 90% 10%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 80% 80%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+        radial-gradient(at 20% 80%, rgba(217, 119, 6, 0.10) 0px, transparent 50%);
+    }
+    .grid-pattern {
+      background-size: 28px 28px;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+    .glow-input:focus {
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25), 0 0 20px rgba(59, 130, 246, 0.15);
+    }
+  </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
-  <div class="bg-white max-w-md w-full p-8 rounded-2xl shadow-xl space-y-6 border border-slate-200">
-    <div class="text-center space-y-2">
-      <div class="inline-flex p-3 bg-blue-100 rounded-full text-blue-600 mb-2">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-        </svg>
+<body class="bg-mesh grid-pattern min-h-screen flex flex-col items-center justify-center p-4 text-slate-100 antialiased font-sans selection:bg-blue-600 selection:text-white relative overflow-hidden">
+
+  <!-- Ambient Glow Blobs -->
+  <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="w-full max-w-md relative z-10">
+
+    <!-- Card Container -->
+    <div class="glass-card rounded-3xl p-8 sm:p-10 space-y-7 transition-all duration-300">
+
+      <!-- Header & Icon Badge -->
+      <div class="text-center space-y-3">
+        <div class="inline-flex p-3.5 bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 rounded-2xl text-white shadow-xl shadow-blue-500/25 ring-1 ring-white/20">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-2 font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            ENTERPRISE GATE SECURITY
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Talabat Tracker</h1>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">Mobile Phone IN / OUT Verification Portal</p>
+        </div>
       </div>
-      <h1 class="text-2xl font-bold text-slate-800">Portal Authentication</h1>
-      <p class="text-xs text-slate-500">Sign in as Guard or Admin to manage entry/exit</p>
+
+      <!-- Error Alert Box -->
+      <div id="errorBox" class="hidden bg-rose-500/10 border border-rose-500/30 text-rose-300 px-4 py-3 rounded-xl text-xs font-semibold flex items-start gap-2.5 animate-fadeIn">
+        <svg class="w-4 h-4 text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span id="errorText"></span>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
+        
+        <!-- Username Field -->
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Username</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+            </div>
+            <input type="text" id="username" required autocomplete="username" placeholder="e.g. guard or admin"
+              class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 glow-input focus:border-blue-500 focus:outline-none transition">
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center">
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Password</label>
+            <button type="button" onclick="togglePasswordVisibility()" class="text-[11px] text-blue-400 hover:text-blue-300 font-semibold focus:outline-none">
+              <span id="toggleText">Show</span>
+            </button>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
+            <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••"
+              class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-10 pr-10 py-3 text-sm text-white placeholder-slate-500 glow-input focus:border-blue-500 focus:outline-none transition">
+          </div>
+        </div>
+
+        <!-- Sign In Button -->
+        <button type="submit" id="submitBtn"
+          class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-600 text-white font-bold py-3.5 rounded-xl text-sm shadow-xl shadow-blue-600/30 hover:shadow-blue-600/50 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 mt-2">
+          <span>Sign In to Terminal</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Quick Fill Helper Buttons for Staff -->
+      <div class="pt-2 border-t border-slate-800/80 space-y-2">
+        <p class="text-[11px] uppercase font-bold text-slate-500 text-center tracking-wider">Fast Access (1-Click Fill)</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="fillCredentials('guard', 'guard123')"
+            class="px-3 py-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition flex items-center justify-center gap-1.5 group">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 group-hover:scale-125 transition"></span>
+            <span>Guard Terminal</span>
+          </button>
+          <button type="button" onclick="fillCredentials('admin', 'admin123')"
+            class="px-3 py-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition flex items-center justify-center gap-1.5 group">
+            <span class="w-2 h-2 rounded-full bg-indigo-400 group-hover:scale-125 transition"></span>
+            <span>Admin Console</span>
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Error Message Alert Box -->
-    <div id="errorBox" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-xs font-semibold"></div>
+    <!-- Live System Status Footer -->
+    <div class="mt-6 text-center space-y-1 text-slate-500 text-xs">
+      <div class="flex items-center justify-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="font-mono text-[11px] text-slate-400">Database: MongoDB Atlas Connected</span>
+      </div>
+      <p class="text-[11px] text-slate-600">Talabat Mobile Tracking System &copy; 2026</p>
+    </div>
 
-    <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
-        <input type="text" id="username" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
-        <input type="password" id="password" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
-      </div>
-      <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-sm transition">
-        Sign In
-      </button>
-    </form>
   </div>
 
   <script>
+    // Quick Demo Credentials Auto-Fill
+    function fillCredentials(u, p) {
+      document.getElementById('username').value = u;
+      document.getElementById('password').value = p;
+      document.getElementById('username').focus();
+    }
+
+    // Toggle Show/Hide Password
+    function togglePasswordVisibility() {
+      const pwd = document.getElementById('password');
+      const toggle = document.getElementById('toggleText');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+        toggle.innerText = 'Hide';
+      } else {
+        pwd.type = 'password';
+        toggle.innerText = 'Show';
+      }
+    }
+
     async function handleLogin(e) {
       e.preventDefault();
       
       const errorBox = document.getElementById('errorBox');
+      const errorText = document.getElementById('errorText');
       const submitBtn = document.getElementById('submitBtn');
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
 
       // Clear previous error and set button loading state
       errorBox.classList.add('hidden');
-      errorBox.innerText = '';
+      if (errorText) errorText.innerText = '';
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Signing in...';
+      submitBtn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Authenticating...</span>
+      `;
 
       try {
         const res = await fetch('/api/auth/login', {
@@ -58,28 +208,54 @@
           body: JSON.stringify({ username, password })
         });
 
-        // Check if response is valid JSON (prevents HTML crash on 404/500 routes)
         const contentType = res.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('API route not found. Verify server is running on localhost.');
+          throw new Error('API server returned non-JSON response. Please check server status.');
         }
 
         const data = await res.json();
 
         if (res.ok && data.success) {
           localStorage.setItem('token', data.token);
-          window.location.href = data.role === 'admin' ? '/admin.html' : '/index.html';
+          // Show brief success transition before redirect
+          submitBtn.classList.remove('from-blue-600', 'via-indigo-600', 'to-blue-700');
+          submitBtn.classList.add('from-emerald-600', 'to-teal-600');
+          submitBtn.innerHTML = `
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>Verified! Redirecting...</span>
+          `;
+          setTimeout(() => {
+            window.location.href = data.role === 'admin' ? '/admin.html' : '/index.html';
+          }, 350);
         } else {
-          errorBox.innerText = data.message || 'Invalid username or password.';
-          errorBox.classList.remove('hidden');
+          showError(data.message || 'Invalid username or password.');
         }
       } catch (err) {
-        errorBox.innerText = err.message || 'Server connection failed. Make sure "node server.js" is active.';
-        errorBox.classList.remove('hidden');
+        showError(err.message || 'Connection failed. Please verify server connectivity.');
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'Sign In';
+        if (!submitBtn.innerHTML.includes('Verified')) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `
+            <span>Sign In to Terminal</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+          `;
+        }
       }
+    }
+
+    function showError(msg) {
+      const errorBox = document.getElementById('errorBox');
+      const errorText = document.getElementById('errorText');
+      if (errorText) {
+        errorText.innerText = msg;
+      } else {
+        errorBox.innerText = msg;
+      }
+      errorBox.classList.remove('hidden');
     }
   </script>
 </body>
