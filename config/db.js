@@ -97,10 +97,33 @@ const connectDB = async () => {
     });
     console.log('MongoDB Connected Successfully to:', mongoose.connection.host);
     await autoSeedCloudDB();
+    await syncStudentStatuses();
   } catch (error) {
     console.error('MongoDB Connection Error:', error.message);
     console.error('Make sure your MongoDB Atlas IP Access List allows 0.0.0.0/0 (anywhere).');
   }
 };
+
+// Align mobile_status with current_status across all student documents
+async function syncStudentStatuses() {
+  try {
+    const Student = require('../models/Student');
+    // Align students who were marked IN
+    const resIn = await Student.updateMany(
+      { current_status: 'IN', mobile_status: { $in: ['NOT_SUBMITTED', '', null] } },
+      { $set: { mobile_status: 'IN' } }
+    );
+    // Align students who were marked OUT
+    const resOut = await Student.updateMany(
+      { current_status: 'OUT', mobile_status: { $in: ['NOT_SUBMITTED', '', null] } },
+      { $set: { mobile_status: 'OUT' } }
+    );
+    if (resIn.modifiedCount > 0 || resOut.modifiedCount > 0) {
+      console.log(`Database Status Sync: ${resIn.modifiedCount} updated to IN, ${resOut.modifiedCount} updated to OUT.`);
+    }
+  } catch (err) {
+    console.error('Database Status Sync notice:', err.message);
+  }
+}
 
 module.exports = connectDB;

@@ -97,11 +97,8 @@ exports.getDashboardMetrics = async (req, res) => {
       $or: [{ mobile_status: 'OUT' }, { current_status: 'OUT' }]
     });
     const notSubmittedCount = await Student.countDocuments({
-      $or: [
-        { mobile_status: 'NOT_SUBMITTED' },
-        { mobile_status: { $exists: false } },
-        { mobile_status: '' }
-      ]
+      mobile_status: { $nin: ['IN', 'OUT'] },
+      current_status: { $nin: ['IN', 'OUT'] }
     });
 
     const recentTransactions = await MovementLog.find()
@@ -130,11 +127,8 @@ exports.getNotSubmittedStudents = async (req, res) => {
   try {
     const { floor, search } = req.query;
     let filter = {
-      $or: [
-        { mobile_status: 'NOT_SUBMITTED' },
-        { mobile_status: { $exists: false } },
-        { mobile_status: '' }
-      ]
+      mobile_status: { $nin: ['IN', 'OUT'] },
+      current_status: { $nin: ['IN', 'OUT'] }
     };
 
     if (floor) {

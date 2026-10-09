@@ -36,15 +36,10 @@ exports.recordMovement = async (req, res) => {
     const staffId = req.user?.id || null;
     const now = new Date();
 
-    // 2. Validate current state to prevent invalid transactions
+    // 2. Process Transaction (Flexible for gate staff without locking)
     if (upperAction === 'IN') {
-      // Prevent duplicate submission if already IN
-      if (student.mobile_status === 'IN') {
-        return res.status(400).json({
-          success: false,
-          message: `Phone for ${student.name} (Pouch #${student.pouch_no || student.mobile || 'N/A'}) is ALREADY submitted (IN). Cannot submit again until returned.`
-        });
-      }
+      const isReintake = (student.mobile_status === 'IN' || student.current_status === 'IN');
+      const inReason = reason || (isReintake ? 'Mobile Phone Re-submitted / Intake Verified' : 'Mobile Phone Submitted');
 
       // Record Mobile IN transaction
       const log = await MovementLog.create({
@@ -57,7 +52,7 @@ exports.recordMovement = async (req, res) => {
         darajah: student.darajah || '',
         floor: student.floor || '',
         action: 'IN',
-        reason: reason || 'Mobile Phone Submitted',
+        reason: inReason,
         phone_brand: phone_brand || student.phone_brand || '',
         phone_model: phone_model || student.phone_model || '',
         reference_no: reference_no || '',
@@ -84,15 +79,11 @@ exports.recordMovement = async (req, res) => {
         log
       });
     } else {
-      // upperAction === 'OUT' (Mobile Phone Returned)
-      if (student.mobile_status !== 'IN' && student.current_status !== 'IN') {
-        return res.status(400).json({
-          success: false,
-          message: `Cannot return phone for ${student.name}: No active IN submission record. Current status is ${student.mobile_status || 'OUT'}.`
-        });
-      }
+      // upperAction === 'OUT' (Mobile Phone Returned / Checked Out)
+      const isNormalReturn = (student.mobile_status === 'IN' || student.current_status === 'IN');
+      const outReason = reason || (isNormalReturn ? 'Mobile Phone Returned' : 'Mobile Phone Returned (Direct / Shift Reconciliation)');
 
-      // Record Mobile OUT transaction (preserves historical IN logs)
+      // Record Mobile OUT transaction (preserves historical logs)
       const log = await MovementLog.create({
         student_id: student._id,
         trno: student.trno,
@@ -103,7 +94,7 @@ exports.recordMovement = async (req, res) => {
         darajah: student.darajah || '',
         floor: student.floor || '',
         action: 'OUT',
-        reason: reason || 'Mobile Phone Returned',
+        reason: outReason,
         phone_brand: phone_brand || student.phone_brand || '',
         phone_model: phone_model || student.phone_model || '',
         reference_no: reference_no || '',

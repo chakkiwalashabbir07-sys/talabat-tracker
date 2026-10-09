@@ -578,7 +578,9 @@
         resBox.classList.remove('hidden');
         if (data.success && data.student) {
           const s = data.student;
-          const status = s.mobile_status || s.current_status || 'NOT_SUBMITTED';
+          const status = (s.mobile_status === 'IN' || s.current_status === 'IN')
+            ? 'IN'
+            : ((s.mobile_status === 'OUT' || s.current_status === 'OUT') ? 'OUT' : 'NOT_SUBMITTED');
           const isSubmitted = status === 'IN';
 
           resBox.className = 'text-xs p-4 rounded-2xl border bg-emerald-950/40 border-emerald-500/30 text-emerald-200 space-y-2';
