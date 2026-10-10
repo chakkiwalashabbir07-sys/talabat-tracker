@@ -36,12 +36,53 @@ exports.recordMovement = async (req, res) => {
     const staffId = req.user?.id || null;
     const now = new Date();
 
-    // 2. Process Transaction (Flexible for gate staff without locking)
-    if (upperAction === 'IN') {
-      const isReintake = (student.mobile_status === 'IN' || student.current_status === 'IN');
-      const inReason = reason || (isReintake ? 'Mobile Phone Re-submitted / Intake Verified' : 'Mobile Phone Submitted');
+    // 2. Determine Current Status
+    const currentStatus = (student.mobile_status === 'IN' || student.current_status === 'IN')
+      ? 'IN'
+      : ((student.mobile_status === 'OUT' || student.current_status === 'OUT') ? 'OUT' : 'NOT_SUBMITTED');
 
-      // Record Mobile IN transaction
+    // 3. Validate Reason
+    let finalReason = String(reason || '').trim();
+    if (finalReason.toLowerCase() === 'others') {
+      const customReason = req.body.custom_reason ? String(req.body.custom_reason).trim() : '';
+      if (!customReason) {
+        return res.status(400).json({ success: false, message: 'Please enter a custom reason when "Others" is selected.' });
+      }
+      finalReason = customReason;
+    }
+
+    if (!finalReason) {
+      return res.status(400).json({ success: false, message: 'Please select or provide a valid reason for this entry.' });
+    }
+
+    // 4. Validate Strict Sequence Rules
+    // Rule A: First entry must be IN; OUT is not allowed initially.
+    // Rule B: If latest status is IN, allow only OUT.
+    // Rule C: If latest status is OUT, allow only IN.
+    if (upperAction === 'IN') {
+      if (currentStatus === 'IN') {
+        return res.status(400).json({
+          success: false,
+          message: `Phone for ${student.name} is currently IN (Office Custody). Only OUT is allowed.`
+        });
+      }
+    } else if (upperAction === 'OUT') {
+      if (currentStatus === 'NOT_SUBMITTED') {
+        return res.status(400).json({
+          success: false,
+          message: `First entry must be IN; OUT is not allowed initially for ${student.name}.`
+        });
+      }
+      if (currentStatus === 'OUT') {
+        return res.status(400).json({
+          success: false,
+          message: `Phone for ${student.name} is currently OUT (With Talabat). Only IN is allowed.`
+        });
+      }
+    }
+
+    // 5. Record Transaction and Update Database
+    if (upperAction === 'IN') {
       const log = await MovementLog.create({
         student_id: student._id,
         trno: student.trno,
@@ -52,7 +93,7 @@ exports.recordMovement = async (req, res) => {
         darajah: student.darajah || '',
         floor: student.floor || '',
         action: 'IN',
-        reason: inReason,
+        reason: finalReason,
         phone_brand: phone_brand || student.phone_brand || '',
         phone_model: phone_model || student.phone_model || '',
         reference_no: reference_no || '',
@@ -74,16 +115,12 @@ exports.recordMovement = async (req, res) => {
 
       return res.json({
         success: true,
-        message: `Mobile phone submitted successfully for ${student.name} (Pouch #${student.pouch_no || student.mobile || 'N/A'})!`,
+        message: `Mobile phone submitted (IN) for ${student.name} (Pouch #${student.pouch_no || student.mobile || 'N/A'})!`,
         student,
         log
       });
     } else {
-      // upperAction === 'OUT' (Mobile Phone Returned / Checked Out)
-      const isNormalReturn = (student.mobile_status === 'IN' || student.current_status === 'IN');
-      const outReason = reason || (isNormalReturn ? 'Mobile Phone Returned' : 'Mobile Phone Returned (Direct / Shift Reconciliation)');
-
-      // Record Mobile OUT transaction (preserves historical logs)
+      // upperAction === 'OUT'
       const log = await MovementLog.create({
         student_id: student._id,
         trno: student.trno,
@@ -94,7 +131,7 @@ exports.recordMovement = async (req, res) => {
         darajah: student.darajah || '',
         floor: student.floor || '',
         action: 'OUT',
-        reason: outReason,
+        reason: finalReason,
         phone_brand: phone_brand || student.phone_brand || '',
         phone_model: phone_model || student.phone_model || '',
         reference_no: reference_no || '',
@@ -114,7 +151,7 @@ exports.recordMovement = async (req, res) => {
 
       return res.json({
         success: true,
-        message: `Mobile phone returned successfully to ${student.name} (Pouch #${student.pouch_no || student.mobile || 'N/A'})!`,
+        message: `Mobile phone returned (OUT) to ${student.name} (Pouch #${student.pouch_no || student.mobile || 'N/A'})!`,
         student,
         log
       });

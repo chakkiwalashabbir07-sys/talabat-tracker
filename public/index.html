@@ -318,10 +318,48 @@
       <!-- Transaction Confirmation Form -->
       <div id="actionArea" class="space-y-4 pt-1">
 
-        <!-- Action Confirmation Buttons (Automatic Status Driven) -->
-        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <!-- Movement Reason Selection & Custom Reason Field -->
+        <div class="bg-slate-950/80 border border-slate-800/90 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <label for="movementReasonSelect" class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <span>Movement Reason <span class="text-rose-400">*</span></span>
+            </label>
+            <span id="nextActionIndicator" class="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              Next Action: --
+            </span>
+          </div>
+
+          <div class="relative">
+            <select id="movementReasonSelect" onchange="handleReasonChange(this.value)"
+              class="w-full bg-slate-900 border border-slate-700/80 text-white text-sm px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition font-sans shadow-inner appearance-none cursor-pointer pr-10">
+              <option value="Personal Use" selected>Personal Use</option>
+              <option value="Exit Traveling">Exit Traveling</option>
+              <option value="khidmat Related">khidmat Related</option>
+              <option value="Medical">Medical</option>
+              <option value="Others">Others</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Custom Reason Text Input (Visible only if 'Others' is selected) -->
+          <div id="customReasonWrapper" class="hidden space-y-1.5 pt-1">
+            <label for="customReasonInput" class="text-[11px] text-slate-400 font-medium">Please specify custom reason <span class="text-rose-400">*</span>:</label>
+            <input type="text" id="customReasonInput" placeholder="Enter custom reason here..."
+              class="w-full bg-slate-900 border border-amber-500/50 text-white text-sm px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition font-sans shadow-inner placeholder-slate-500" />
+          </div>
+        </div>
+
+        <!-- Action Confirmation Buttons (Strict In/Out State Driven) -->
+        <div class="pt-1">
           <!-- Submit Phone (Mobile IN) Button -->
-          <button id="btnMobileIn" onclick="confirmTransaction('IN')" class="flex-1 py-4 sm:py-4.5 rounded-2xl font-black text-base bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-2xl shadow-emerald-950/80 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2.5 border border-emerald-400/30 ring-2 ring-emerald-500/20">
+          <button id="btnMobileIn" onclick="confirmTransaction('IN')" class="w-full py-4 sm:py-4.5 rounded-2xl font-black text-base bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-2xl shadow-emerald-950/80 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2.5 border border-emerald-400/30 ring-2 ring-emerald-500/20">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
             </svg>
@@ -329,7 +367,7 @@
           </button>
 
           <!-- Return Phone (Mobile OUT) Button -->
-          <button id="btnMobileOut" onclick="confirmTransaction('OUT')" class="flex-1 py-4 sm:py-4.5 rounded-2xl font-black text-base bg-gradient-to-r from-rose-600 via-red-600 to-rose-600 hover:from-rose-500 hover:to-red-500 text-white shadow-2xl shadow-rose-950/80 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2.5 border border-rose-400/30 ring-2 ring-rose-500/20">
+          <button id="btnMobileOut" onclick="confirmTransaction('OUT')" class="w-full py-4 sm:py-4.5 rounded-2xl font-black text-base bg-gradient-to-r from-rose-600 via-red-600 to-rose-600 hover:from-rose-500 hover:to-red-500 text-white shadow-2xl shadow-rose-950/80 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2.5 border border-rose-400/30 ring-2 ring-rose-500/20">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
             </svg>
@@ -367,11 +405,12 @@
               <th class="py-3 px-3">Action</th>
               <th class="py-3 px-3">Talabat</th>
               <th class="py-3 px-3">Pouch #</th>
+              <th class="py-3 px-3">Reason</th>
               <th class="py-3 px-3">Staff</th>
             </tr>
           </thead>
           <tbody id="recentLogsBody" class="divide-y divide-slate-800/60 text-slate-300">
-            <tr><td colspan="5" class="py-6 text-center text-slate-500">Loading recent activity...</td></tr>
+            <tr><td colspan="6" class="py-6 text-center text-slate-500">Loading recent activity...</td></tr>
           </tbody>
         </table>
       </div>
@@ -678,7 +717,20 @@
       }
     }
 
-    // 8. Display Student Card with Automatic Status Detection & Side-by-Side Action Buttons
+    // Reason Selection Handler
+    function handleReasonChange(val) {
+      const customWrapper = document.getElementById('customReasonWrapper');
+      const customInput = document.getElementById('customReasonInput');
+      if (val === 'Others') {
+        customWrapper.classList.remove('hidden');
+        if (customInput) customInput.focus();
+      } else {
+        customWrapper.classList.add('hidden');
+        if (customInput) customInput.value = '';
+      }
+    }
+
+    // 8. Display Student Card with Strict Sequential In/Out Logic
     function displayStudentCard(student, activeLog) {
       currentStudent = student;
       const card = document.getElementById('studentCard');
@@ -687,6 +739,7 @@
       const btnOut = document.getElementById('btnMobileOut');
       const subBox = document.getElementById('activeSubmissionBox');
       const subDetails = document.getElementById('activeLogDetails');
+      const nextIndicator = document.getElementById('nextActionIndicator');
 
       // Populate basic details & initials
       document.getElementById('stName').innerText = student.name;
@@ -704,33 +757,62 @@
       const status = resolveStatus(student);
 
       if (status === 'IN') {
-        // Phone is currently SUBMITTED in office custody
-        badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1.5';
+        // Latest status is IN -> Allow ONLY OUT
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1.5 shadow-md';
         badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span>IN (OFFICE CUSTODY)</span>';
 
-        // Display active submission details
         if (activeLog) {
           const inTime = activeLog.timestamp ? new Date(activeLog.timestamp).toLocaleString() : 'Recent';
           subDetails.innerHTML = `
-            Submitted: <b>${inTime}</b> | Received by Staff: <b class="text-white">${activeLog.staff_username || 'staff'}</b>
+            Submitted: <b>${inTime}</b> | Reason: <b class="text-amber-300">${activeLog.reason || 'Phone Submitted'}</b> | Staff: <b class="text-white">${activeLog.staff_username || 'staff'}</b>
           `;
           subBox.classList.remove('hidden');
         } else {
           subBox.classList.add('hidden');
         }
+
+        // Show only OUT button
+        btnIn.classList.add('hidden');
+        btnOut.classList.remove('hidden');
+        if (nextIndicator) {
+          nextIndicator.className = 'text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30';
+          nextIndicator.innerText = 'Next Allowed: Mobile OUT';
+        }
       } else if (status === 'OUT') {
-        badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center gap-1.5';
+        // Latest status is OUT -> Allow ONLY IN
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center gap-1.5 shadow-md';
         badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-400"></span><span>OUT (WITH TALABAT)</span>';
         subBox.classList.add('hidden');
+
+        // Show only IN button
+        btnIn.classList.remove('hidden');
+        btnOut.classList.add('hidden');
+        if (nextIndicator) {
+          nextIndicator.className = 'text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+          nextIndicator.innerText = 'Next Allowed: Mobile IN';
+        }
       } else {
-        badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-slate-700/60 text-slate-300 border border-slate-600 flex items-center gap-1.5';
+        // Initial state NOT_SUBMITTED -> First entry must be IN; OUT is not allowed initially!
+        badge.className = 'px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-slate-700/60 text-slate-300 border border-slate-600 flex items-center gap-1.5 shadow-md';
         badge.innerHTML = '<span>PENDING SUBMISSION</span>';
         subBox.classList.add('hidden');
+
+        // Show only IN button (First entry)
+        btnIn.classList.remove('hidden');
+        btnOut.classList.add('hidden');
+        if (nextIndicator) {
+          nextIndicator.className = 'text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+          nextIndicator.innerText = 'First Entry: Mobile IN (OUT not allowed)';
+        }
       }
 
-      // CRITICAL FIX: Ensure BOTH "CONFIRM MOBILE IN" and "CONFIRM MOBILE OUT" options are ALWAYS visible side-by-side
-      btnIn.classList.remove('hidden');
-      btnOut.classList.remove('hidden');
+      // Reset Reason selection to default
+      const reasonSelect = document.getElementById('movementReasonSelect');
+      if (reasonSelect) reasonSelect.value = 'Personal Use';
+      const customWrapper = document.getElementById('customReasonWrapper');
+      if (customWrapper) customWrapper.classList.add('hidden');
+      const customInput = document.getElementById('customReasonInput');
+      if (customInput) customInput.value = '';
 
       card.classList.remove('hidden');
       card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -743,11 +825,46 @@
       document.getElementById('barcodeInput').focus();
     }
 
-    // 9. Confirm Transaction (IN or OUT) with Double-Click Prevention
+    // 9. Confirm Transaction (IN or OUT) with Strict Validation & Instant Refresh
     async function confirmTransaction(action) {
       if (!currentStudent) return;
       const token = checkAuth();
       if (!token) return;
+
+      const currentStatus = resolveStatus(currentStudent);
+
+      // Validate Action Rule: First entry must be IN; if latest is IN allow only OUT; if latest is OUT allow only IN
+      if (action === 'IN') {
+        if (currentStatus === 'IN') {
+          showAlert(`Mobile phone for ${currentStudent.name} is already IN. Only OUT is allowed.`, false);
+          return;
+        }
+      } else if (action === 'OUT') {
+        if (currentStatus === 'NOT_SUBMITTED') {
+          showAlert(`First entry must be IN. OUT is not allowed initially for ${currentStudent.name}.`, false);
+          return;
+        }
+        if (currentStatus === 'OUT') {
+          showAlert(`Mobile phone for ${currentStudent.name} is already OUT. Only IN is allowed.`, false);
+          return;
+        }
+      }
+
+      // Extract & Validate Reason
+      const reasonSelect = document.getElementById('movementReasonSelect');
+      const selectedDropdownVal = reasonSelect ? reasonSelect.value : 'Personal Use';
+      let finalReason = selectedDropdownVal;
+
+      if (selectedDropdownVal === 'Others') {
+        const customInput = document.getElementById('customReasonInput');
+        const customVal = customInput ? customInput.value.trim() : '';
+        if (!customVal) {
+          showAlert('Please specify a custom reason in the text box for "Others".', false);
+          if (customInput) customInput.focus();
+          return;
+        }
+        finalReason = customVal;
+      }
 
       const btnIn = document.getElementById('btnMobileIn');
       const btnOut = document.getElementById('btnMobileOut');
@@ -759,7 +876,7 @@
       const payload = {
         trno: currentStudent.trno,
         action: action,
-        reason: action === 'IN' ? 'Phone Submitted' : 'Phone Returned'
+        reason: finalReason
       };
 
       try {
@@ -776,7 +893,17 @@
 
         if (res.ok && data.success) {
           showAlert(data.message || `Transaction Completed: Mobile ${action}`, true);
-          dismissStudentCard();
+          
+          // Immediately update student status in frontend and switch to next option
+          if (data.student) {
+            currentStudent = data.student;
+            displayStudentCard(data.student, data.log);
+          } else {
+            currentStudent.mobile_status = action;
+            currentStudent.current_status = action;
+            displayStudentCard(currentStudent, data.log);
+          }
+
           fetchRecentLogs();
         } else {
           showAlert(data.message || 'Transaction could not be recorded.', false);
@@ -814,12 +941,13 @@
                 <td class="py-3 px-3">${actionBadge}</td>
                 <td class="py-3 px-3 font-bold text-white">${l.student_name || 'TR ' + l.trno}</td>
                 <td class="py-3 px-3 font-bold text-amber-300 font-mono">#${l.pouch_no || '-'}</td>
+                <td class="py-3 px-3 text-slate-300 text-[11px]"><span class="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700/60 font-medium">${l.reason || '-'}</span></td>
                 <td class="py-3 px-3 text-slate-400 font-mono text-[11px]">${l.staff_username || 'staff'}</td>
               </tr>
             `;
           }).join('');
         } else {
-          tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-500">No transactions recorded yet today.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-500">No transactions recorded yet today.</td></tr>';
         }
       } catch (e) {
         console.error('Error loading recent activity:', e);

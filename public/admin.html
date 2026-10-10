@@ -366,6 +366,7 @@
               <th class="py-3 px-3">Talabat Name</th>
               <th class="py-3 px-3">Pouch #</th>
               <th class="py-3 px-3">Floor / Room</th>
+              <th class="py-3 px-3">Reason</th>
               <th class="py-3 px-3">Staff</th>
             </tr>
           `;
@@ -391,12 +392,13 @@
                   <td class="py-3 px-3 font-semibold text-white">${l.student_name || '-'}</td>
                   <td class="py-3 px-3 font-bold text-amber-300 font-mono">#${l.pouch_no || '-'}</td>
                   <td class="py-3 px-3 text-slate-400">${l.floor || '-'} (${l.roomno || '-'})</td>
+                  <td class="py-3 px-3 text-slate-300 text-[11px]"><span class="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700/60 font-medium">${l.reason || '-'}</span></td>
                   <td class="py-3 px-3 text-slate-400 font-mono text-[11px]">${l.staff_username || 'staff'}</td>
                 </tr>
               `;
             }).join('');
           } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-500">No transaction logs match current filters.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-slate-500">No transaction logs match current filters.</td></tr>';
           }
 
         } else if (currentTab === 'in') {
