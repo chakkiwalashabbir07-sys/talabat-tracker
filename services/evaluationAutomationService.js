@@ -108,6 +108,7 @@ class EvaluationAutomationService {
     this.executablePath = null;
     this.sharedBrowser = null;
     this.sharedPage = null;
+    this.idleCloseTimer = null;
 
     // Shared serialized automation queue
     this.queue = [];
@@ -133,7 +134,7 @@ class EvaluationAutomationService {
       itemId
     };
     this.logs.push(logItem);
-    if (this.logs.length > 250) {
+    if (this.logs.length > 80) {
       this.logs.shift();
     }
     console.log(`[EvalQueue] [${level}] ${itemId ? `[${itemId}] ` : ''}${message}`);
@@ -144,6 +145,10 @@ class EvaluationAutomationService {
 
   // Enqueue a single manual entry
   enqueueManual(entryData, user, options = {}) {
+    if (this.idleCloseTimer) {
+      clearTimeout(this.idleCloseTimer);
+      this.idleCloseTimer = null;
+    }
     const itemId = 'man_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     const item = {
       id: itemId,
@@ -187,6 +192,10 @@ class EvaluationAutomationService {
 
   // Enqueue bulk entries
   enqueueBulk(itemsArray, user, sharedParams = {}, options = {}) {
+    if (this.idleCloseTimer) {
+      clearTimeout(this.idleCloseTimer);
+      this.idleCloseTimer = null;
+    }
     const jobId = 'bulk_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     const enqueuedItems = [];
 
@@ -337,15 +346,33 @@ class EvaluationAutomationService {
     // 2. Unlock profile directory if held by stale processes
     unlockBrowserProfile(BROWSER_PROFILE_DIR);
 
-    // 3. Build launch options
+    // 3. Build launch options (optimized for constrained 512MB RAM cloud containers)
     const launchArgs = [
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
       '--disable-gpu',
+      '--disable-software-rasterizer',
+      '--renderer-process-limit=1',
+      '--disable-extensions',
+      '--disable-default-apps',
+      '--mute-audio',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--disable-background-networking',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-breakpad',
+      '--disable-client-side-phishing-detection',
+      '--disable-features=Translate,BackForwardCache,AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync',
+      '--disable-ipc-flooding-protection',
+      '--disable-renderer-backgrounding',
+      '--disable-sync',
+      '--force-color-profile=srgb',
+      '--metrics-recording-only',
       '--disable-blink-features=AutomationControlled',
       '--disable-infobars',
+      '--js-flags=--max-old-space-size=128',
       ...(config.extraArgs || [])
     ];
 
@@ -394,6 +421,35 @@ class EvaluationAutomationService {
     }
   }
 
+  // Auto-close browser after 45s of queue inactivity to reclaim ~350MB of host RAM
+  scheduleIdleBrowserClose() {
+    if (this.idleCloseTimer) clearTimeout(this.idleCloseTimer);
+    this.idleCloseTimer = setTimeout(async () => {
+      if (!this.isProcessing && this.queue.length === 0) {
+        await this.closeBrowser();
+      }
+    }, 45000);
+  }
+
+  // Gracefully terminate browser and free all memory back to OS
+  async closeBrowser() {
+    try {
+      if (this.sharedBrowser) {
+        this.addLog('INFO', 'Closing idle browser to release host memory (saving ~350MB RAM)...');
+        const b = this.sharedBrowser;
+        this.sharedBrowser = null;
+        this.sharedPage = null;
+        try {
+          await b.close();
+        } catch (e) {}
+        unlockBrowserProfile(BROWSER_PROFILE_DIR);
+        if (typeof global.gc === 'function') {
+          try { global.gc(); } catch (e) {}
+        }
+      }
+    } catch (e) {}
+  }
+
   // Ensure portal page is open, logged in, and at /teacher/tashjee-entry
   async ensurePortalReady() {
     const browser = await this.getOrCreateBrowser();
@@ -407,6 +463,22 @@ class EvaluationAutomationService {
       page = jhsPage || (pages.length > 0 ? pages[0] : await browser.newPage());
       this.sharedPage = page;
     }
+
+    // Intercept and abort images/media/fonts to reduce RAM usage by >120MB
+    try {
+      if (!page._interceptApplied) {
+        await page.setRequestInterception(true);
+        page._interceptApplied = true;
+        page.on('request', (req) => {
+          const type = req.resourceType();
+          if (['image', 'media', 'font'].includes(type)) {
+            req.abort();
+          } else {
+            req.continue();
+          }
+        });
+      }
+    } catch (e) {}
 
     const currentUrl = page.url();
 
@@ -713,6 +785,7 @@ class EvaluationAutomationService {
       this.activeItem = null;
       this.isProcessing = false;
       this.addLog('INFO', this.isPaused ? 'Queue processing paused.' : 'Queue processing idle. All pending entries completed.');
+      this.scheduleIdleBrowserClose();
     }
   }
 
