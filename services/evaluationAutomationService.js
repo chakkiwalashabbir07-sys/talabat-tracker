@@ -1,8 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const EvaluationEntry = require('../models/EvaluationEntry');
+
+// Optional Sparticuz Chromium for serverless / container environments (Render)
+let sparticuzChromium = null;
+try {
+  const rawChromium = require('@sparticuz/chromium');
+  sparticuzChromium = rawChromium.default || rawChromium;
+} catch (e) {}
 
 // User data dir for persistent login session
 const BROWSER_PROFILE_DIR = path.resolve(__dirname, '..', 'browser_profile');
@@ -10,27 +17,69 @@ if (!fs.existsSync(BROWSER_PROFILE_DIR)) {
   fs.mkdirSync(BROWSER_PROFILE_DIR, { recursive: true });
 }
 
-// Helper to find installed browser executable (Cross-platform)
-function getBrowserExecutablePath() {
-  const paths = [
-    process.env.CHROME_BIN,
-    process.env.PUPPETEER_EXECUTABLE_PATH,
-    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+// Helper to resolve browser configuration (Cross-platform: Windows, Linux, Render)
+async function resolveBrowserConfig() {
+  const isLinux = process.platform === 'linux';
+
+  // 1. If on Windows, look for local Chrome/Edge
+  if (process.platform === 'win32') {
+    const winPaths = [
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+    ];
+    for (const p of winPaths) {
+      if (fs.existsSync(p)) return { executablePath: p, isHeadless: false };
+    }
+  }
+
+  // 2. Check environment variable overrides
+  if (process.env.CHROME_BIN && fs.existsSync(process.env.CHROME_BIN)) {
+    return { executablePath: process.env.CHROME_BIN, isHeadless: isLinux };
+  }
+  if (process.env.PUPPETEER_EXECUTABLE_PATH && fs.existsSync(process.env.PUPPETEER_EXECUTABLE_PATH)) {
+    return { executablePath: process.env.PUPPETEER_EXECUTABLE_PATH, isHeadless: isLinux };
+  }
+
+  // 3. Check standard Linux paths
+  const linuxPaths = [
     '/usr/bin/google-chrome',
     '/usr/bin/google-chrome-stable',
     '/usr/bin/chromium',
     '/usr/bin/chromium-browser'
-  ].filter(Boolean);
+  ];
+  for (const p of linuxPaths) {
+    if (fs.existsSync(p)) return { executablePath: p, isHeadless: true };
+  }
 
-  for (const p of paths) {
-    if (fs.existsSync(p)) {
-      return p;
+  // 4. Try Puppeteer's own downloaded browser (installed in .cache/puppeteer)
+  try {
+    if (typeof puppeteer.executablePath === 'function') {
+      const pPath = await puppeteer.executablePath();
+      if (pPath && fs.existsSync(pPath)) {
+        return { executablePath: pPath, isHeadless: isLinux };
+      }
+    }
+  } catch (e) {}
+
+  // 5. Check if @sparticuz/chromium can provide an executablePath (Render / Linux container)
+  if (sparticuzChromium && typeof sparticuzChromium.executablePath === 'function') {
+    try {
+      const sPath = await sparticuzChromium.executablePath();
+      if (sPath) {
+        return {
+          executablePath: sPath,
+          isHeadless: true,
+          extraArgs: sparticuzChromium.args || []
+        };
+      }
+    } catch (e) {
+      console.warn('Sparticuz Chromium resolution:', e.message);
     }
   }
-  return null;
+
+  return { executablePath: null, isHeadless: isLinux };
 }
 
 // Helper to safely unlock profile directory and kill stale processes
@@ -71,11 +120,7 @@ class EvaluationAutomationService {
     // Legacy active sessions map for backward compatibility
     this.activeSessions = new Map();
 
-    try {
-      this.executablePath = getBrowserExecutablePath();
-    } catch (e) {
-      console.warn('Browser detection warning:', e.message);
-    }
+    // Browser configuration is resolved dynamically on launch
   }
 
   // Add system / queue log
@@ -271,48 +316,65 @@ class EvaluationAutomationService {
       return this.sharedBrowser;
     }
 
-    const execPath = this.executablePath || getBrowserExecutablePath();
+    const config = await resolveBrowserConfig();
 
-    // 1. Try connecting to existing Chrome instance on port 9222
-    try {
-      const existing = await puppeteer.connect({ browserURL: 'http://127.0.0.1:9222', defaultViewport: null });
-      if (isAlive(existing)) {
-        this.addLog('INFO', 'Connected to active Chrome instance on port 9222.');
-        this.sharedBrowser = existing;
-        existing.on('disconnected', () => { 
-          this.sharedBrowser = null; 
-          this.sharedPage = null; 
-        });
-        return existing;
-      }
-    } catch (e) {}
+    // 1. Try connecting to existing Chrome instance on port 9222 (for local dev / debug)
+    if (!config.isHeadless) {
+      try {
+        const existing = await puppeteer.connect({ browserURL: 'http://127.0.0.1:9222', defaultViewport: null });
+        if (isAlive(existing)) {
+          this.addLog('INFO', 'Connected to active Chrome instance on port 9222.');
+          this.sharedBrowser = existing;
+          existing.on('disconnected', () => { 
+            this.sharedBrowser = null; 
+            this.sharedPage = null; 
+          });
+          return existing;
+        }
+      } catch (e) {}
+    }
 
     // 2. Unlock profile directory if held by stale processes
     unlockBrowserProfile(BROWSER_PROFILE_DIR);
 
-    // 3. Launch Chrome with debugging port
+    // 3. Build launch options
+    const launchArgs = [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--disable-gpu',
+      '--disable-blink-features=AutomationControlled',
+      '--disable-infobars',
+      ...(config.extraArgs || [])
+    ];
+
+    if (!config.isHeadless) {
+      launchArgs.push('--remote-debugging-port=9222');
+      launchArgs.push('--start-maximized');
+    }
+
+    const launchOptions = {
+      headless: config.isHeadless ? true : false,
+      userDataDir: BROWSER_PROFILE_DIR,
+      defaultViewport: config.isHeadless ? { width: 1280, height: 900 } : null,
+      args: launchArgs
+    };
+
+    if (config.executablePath) {
+      launchOptions.executablePath = config.executablePath;
+    }
+
     try {
-      const browser = await puppeteer.launch({
-        executablePath: execPath,
-        headless: false,
-        userDataDir: BROWSER_PROFILE_DIR,
-        defaultViewport: null,
-        args: [
-          '--remote-debugging-port=9222',
-          '--start-maximized',
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-blink-features=AutomationControlled',
-          '--disable-infobars'
-        ]
-      });
+      this.addLog('INFO', `Launching Chrome (Headless: ${config.isHeadless}, Path: ${config.executablePath || 'default-bundled'})...`);
+      const browser = await puppeteer.launch(launchOptions);
 
       this.sharedBrowser = browser;
       browser.on('disconnected', () => {
         this.sharedBrowser = null;
         this.sharedPage = null;
       });
-      this.addLog('INFO', 'Launched new Chrome instance with persistent profile.');
+      this.addLog('INFO', 'Browser initialized and connected successfully.');
       return browser;
     } catch (launchErr) {
       if (launchErr.message && launchErr.message.includes('already running')) {
@@ -320,20 +382,7 @@ class EvaluationAutomationService {
         unlockBrowserProfile(BROWSER_PROFILE_DIR);
         await new Promise(r => setTimeout(r, 1500));
 
-        const browser = await puppeteer.launch({
-          executablePath: execPath,
-          headless: false,
-          userDataDir: BROWSER_PROFILE_DIR,
-          defaultViewport: null,
-          args: [
-            '--remote-debugging-port=9222',
-            '--start-maximized',
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-blink-features=AutomationControlled',
-            '--disable-infobars'
-          ]
-        });
+        const browser = await puppeteer.launch(launchOptions);
         this.sharedBrowser = browser;
         browser.on('disconnected', () => {
           this.sharedBrowser = null;

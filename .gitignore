@@ -6,3 +6,4 @@ database_backup.json
 uploads/
 scripts/test_atlas.js
 browser_profile/
+.cache/

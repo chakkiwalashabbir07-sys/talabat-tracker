@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -15,6 +16,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@sparticuz/chromium": "^153.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.5",
@@ -25,6 +27,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.11.0",
     "multer": "^2.4.0",
+    "puppeteer": "^25.14.0",
     "puppeteer-core": "^25.14.0",
     "xlsx": "^0.18.5"
   }
