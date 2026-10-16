@@ -227,7 +227,12 @@
             <span>Verified! Redirecting...</span>
           `;
           setTimeout(() => {
-            window.location.href = data.role === 'admin' ? '/admin.html' : '/index.html';
+            const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+            if (redirectUrl && (redirectUrl.startsWith('/') || redirectUrl.startsWith(window.location.origin))) {
+              window.location.href = redirectUrl;
+            } else {
+              window.location.href = data.role === 'admin' ? '/admin.html' : '/index.html';
+            }
           }, 350);
         } else {
           showError(data.message || 'Invalid username or password.');

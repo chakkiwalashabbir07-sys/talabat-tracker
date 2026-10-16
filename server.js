@@ -90,6 +90,7 @@ app.post('/api/auth/login', authLimiter, require('./controllers/authController')
 // Protected API Routes
 app.use('/api/student', apiLimiter, verifyToken, require('./routes/studentRoutes'));
 app.use('/api/movement', apiLimiter, verifyToken, require('./routes/movementRoutes'));
+app.use('/api/evaluation', apiLimiter, verifyToken, require('./routes/evaluationRoutes'));
 
 // Global Error Handler (Prevents stack trace leaks in production)
 app.use((err, req, res, next) => {

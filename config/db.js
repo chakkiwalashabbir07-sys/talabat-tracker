@@ -73,6 +73,25 @@ async function autoSeedCloudDB() {
         console.log('--- Cloud Database Initialized Successfully! ---');
       }
     }
+
+    // Auto-seed evaluation remarks if empty
+    try {
+      const EvaluationRemark = require('../models/EvaluationRemark');
+      const remarkCount = await EvaluationRemark.countDocuments();
+      if (remarkCount === 0) {
+        const remarkSeedPath = path.join(__dirname, '..', 'data', 'evaluation_remarks.json');
+        if (fs.existsSync(remarkSeedPath)) {
+          const rawRemarks = fs.readFileSync(remarkSeedPath, 'utf-8');
+          const remarksData = JSON.parse(rawRemarks);
+          if (Array.isArray(remarksData) && remarksData.length > 0) {
+            console.log(`Auto-seeding ${remarksData.length} evaluation remarks...`);
+            await EvaluationRemark.insertMany(remarksData);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Evaluation remarks seed warning:', e.message);
+    }
   } catch (err) {
     console.error('Auto-seed warning:', err.message);
   }

@@ -25,6 +25,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.11.0",
     "multer": "^2.4.0",
+    "puppeteer-core": "^25.14.0",
     "xlsx": "^0.18.5"
   }
 }

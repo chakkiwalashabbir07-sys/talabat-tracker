@@ -1,0 +1,472 @@
+[
+  {
+    "text": "Amali - Namaaz - Shafaa Watr roz adaa parhe che (Weekly)",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 5,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Musaadat - Idara na kaamo ma behtar musaadat kare che (weekly)",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Musaadat - Umoor thaqafiyya, ilmiyya, fanniya ma musaadat kidi che (per event)",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Musaadat - Toloba ma nizaam ni pabandi rahe ye vaste musaadat kare che (Weekly)",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 3,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Namaaz - Namaz na awqaat ma toloba ne masjid ma mokalva vaste musaadat kare che",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Namaaz - Quran e Majeed na daur ma hazir rahe che (Weekly)",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 5,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Namaaz - Dua e Aql e Awwal ni tilawat kare che (Weekly)",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 7,
+    "isCustom": false
+  },
+  {
+    "text": "Akhlaaq - Spending - Sakhawat ane maali nahiyat si madad karva ni adat che",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 1,
+    "isCustom": false
+  },
+  {
+    "text": "Sehat - Khaimat - Gymnasium ma jawa ni adat che (Weekly)",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 7,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Namaaz - Bihori parhva ni adat che (Weekly)",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 5,
+    "isCustom": false
+  },
+  {
+    "text": "Akhlaaq - Interaction - Bimar talabat / Khidmat Guzar ne pareegva gaya",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Musaadat - Khidmat ijtimaiyya numaya shakelat si anjam didi che (Ramadaniyya, Husainiya, Tahfeez, Ohbat, Uplifment, Mazar)",
+    "evaluationType": "Tashjee",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": 10,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Gadgets - Baghair raza Laptop rakhe che (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -5,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Gadgets - Baghair raza jagah par electronic gadgets rakhe che (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -5,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Masakin/Rabvat Entry - Baghair raza takheer si hazir thae che (per entry)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -1,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Personal Hygiene - Mohta baal rakhe che (Taujih karva bad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Personal Hygiene - Kapda dhulava ma etena nathi karta (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Personal Hygiene - Libaas ni nazafat nathi rakhta (Taujih karva bad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Tanzeem Tarteeb - Jagah ma nazafat, tanzeem ane tarteeb ma farq che (Weekly inspection)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -7,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Tanzeem Tarteeb - Foyer ma ya biji jagaho par musalla, kitaabo, hafti, paghdi ya ehni misal ni cheezo muki de che",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -1,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Room Hygiene - Bag luggage room ma muki nathi",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -1,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Siyanat - Room ni lights, fan ya iron band nathi kidi",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -1,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Room Related - Room ni chavi jama nathi karavi",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -1,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Taharat - Napak perfumes, deodrants istemal kare che (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Night out - Late night jaagi ne waato karva ni adat che (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Night out - 10:30 PM suta nathi (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Namaaz - Namaz ma ghair hazir rahe che",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Namaaz - Namaz na awqaat ni muraat ma farq che (per namaz)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Masakin/Rabvat Entry - Watchman sathe jhagro kari ne masakin ma dakhil thae che",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Qasida - Raate tilawat al-Qasaid ma ghair haziri (Weekly)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -5,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Siyanat - Room ma ya study room ma cricket ya ye misal ni games rame che",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Breakfast - Nashta ni waari ma etena si kaam nathi karta (per turn)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Night out - Masakin / Rabwat na bahar baghair raza mabeet kidu che (per night)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Akhlaaq - Spending - Fuzool kharch kare che, Credit card rakhe che (Taujih karva bad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Akhlaaq - Spending - Hotel ma java ni adat che (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -5,
+    "isCustom": false
+  },
+  {
+    "text": "Akhlaaq - Interaction - Adab al-Kalaam nu khayal rakhta nathi",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -2,
+    "isCustom": false
+  },
+  {
+    "text": "Akhlaaq - Interaction - Baaz waqat jhoot bole che",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -1,
+    "isCustom": false
+  },
+  {
+    "text": "Akhlaaq - Bad Character - Asateza / Khidmat Guzaro ni taazeem ma farq paru che",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -5,
+    "isCustom": false
+  },
+  {
+    "text": "Akhlaaq - Stealing - Sareqat kidi che",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -10,
+    "isCustom": false
+  },
+  {
+    "text": "Sehat - Breakfast - Nashto karva ni adat nathi (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Taharat - Taharat na asbab (chakri, towel, paglu) ma farq che (Weekly inspection)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -5,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Appearence - Ghair Munasib kapda/ghair munasib shakelat si kapda pehne che (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Namaaz - Sanaa ni naubat ma sanaa vaste hazir na thaya",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -2,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Tanzeem Tarteeb - Travel bags foyer me muki de che (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Sehat - Sehat - Bahar si cheezo (pizza, cake, burger etc.) mangawi potana room ma jame che (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -5,
+    "isCustom": false
+  },
+  {
+    "text": "Amali - Nizaam - Nizaam mutabiq amal karva ma be etenai nazar ave che (Taujih karva baad)",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  },
+  {
+    "text": "Sehat - Sehat - Sehat nu khayal nathi rakhta",
+    "evaluationType": "Tanbeeh",
+    "departments": [
+      "Male Residences"
+    ],
+    "idara": "Male Residences",
+    "points": -3,
+    "isCustom": false
+  }
+]
