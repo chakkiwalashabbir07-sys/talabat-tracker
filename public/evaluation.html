@@ -1010,22 +1010,39 @@
     function startQueuePolling() {
       if (queuePollTimeoutId) clearTimeout(queuePollTimeoutId);
       pollQueue();
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          if (queuePollTimeoutId) clearTimeout(queuePollTimeoutId);
+          pollQueue();
+        }
+      });
     }
 
     async function pollQueue() {
       if (queuePollTimeoutId) clearTimeout(queuePollTimeoutId);
-      let nextPollMs = 2000;
+      let nextPollMs = 3000;
       try {
+        if (document.hidden) {
+          queuePollTimeoutId = setTimeout(pollQueue, 10000);
+          return;
+        }
+
         const res = await authFetch('/api/evaluation/queue/status');
+        if (res.status === 429) {
+          console.warn('Queue status poll rate limited. Backing off for 10 seconds...');
+          queuePollTimeoutId = setTimeout(pollQueue, 10000);
+          return;
+        }
+
         const data = await res.json();
         if (data && data.success) {
           updateQueueUI(data);
           const hasWork = data.isProcessing || (data.queue && data.queue.length > 0) || data.activeItem;
-          // Responsive 400ms polling when busy, 2000ms when idle
-          nextPollMs = hasWork ? 400 : 2000;
+          // Responsive 1500ms when busy, 4000ms when idle
+          nextPollMs = hasWork ? 1500 : 4000;
         }
       } catch (e) {
-        nextPollMs = 2500;
+        nextPollMs = 4000;
       } finally {
         queuePollTimeoutId = setTimeout(pollQueue, nextPollMs);
       }

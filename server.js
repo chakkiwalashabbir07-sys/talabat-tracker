@@ -43,11 +43,15 @@ app.use((req, res, next) => {
 
 app.use(express.static('public'));
 
-// Rate Limiting: General API endpoints (100 requests per 15 min per IP)
+// Rate Limiting: General API endpoints (Allow high throughput for live gate scanning and dashboards)
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 5000,
   validate: { xForwardedForHeader: false },
+  skip: (req) => {
+    const url = req.originalUrl || req.url || '';
+    return url.includes('/queue/status') || url.includes('/stats') || url.includes('/remarks');
+  },
   message: { success: false, message: 'Too many requests, please try again later.' }
 });
 
