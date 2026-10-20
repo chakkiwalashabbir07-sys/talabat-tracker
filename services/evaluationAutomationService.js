@@ -821,8 +821,14 @@ class EvaluationAutomationService {
       page = await this.ensurePortalReady();
     }
 
-    // Ensure form is rendered
-    await page.waitForSelector('button.type-pill, ng-select[formcontrolname="departmentId"]', { timeout: 15000 });
+    // Ensure form is rendered (with auto-reload fallback if Angular render is delayed)
+    try {
+      await page.waitForSelector('button.type-pill, ng-select[formcontrolname="departmentId"], button.submit-btn', { timeout: 18000 });
+    } catch (selectorErr) {
+      this.addLog('WARN', 'Form component loading delayed, reloading entry page...', item.id);
+      await page.goto('https://beta.jameasaifiyah.org/teacher/tashjee-entry', { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForSelector('button.type-pill, ng-select[formcontrolname="departmentId"], button.submit-btn', { timeout: 25000 });
+    }
 
     // 3. Clear ALL stale banners/toasts so they cannot trigger false positives from previous students
     await page.evaluate(() => {

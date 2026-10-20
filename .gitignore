@@ -7,3 +7,4 @@ uploads/
 scripts/test_atlas.js
 browser_profile/
 .cache/
+*.bat

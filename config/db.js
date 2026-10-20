@@ -112,14 +112,26 @@ const connectDB = async () => {
 
   try {
     await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 8000
+      serverSelectionTimeoutMS: 5000
     });
     console.log('MongoDB Connected Successfully to:', mongoose.connection.host);
     await autoSeedCloudDB();
     await syncStudentStatuses();
   } catch (error) {
-    console.error('MongoDB Connection Error:', error.message);
-    console.error('Make sure your MongoDB Atlas IP Access List allows 0.0.0.0/0 (anywhere).');
+    console.warn('MongoDB Atlas Connection Warning:', error.message);
+    if (!uri.includes('127.0.0.1') && !uri.includes('localhost')) {
+      console.log('Falling back to local MongoDB at mongodb://127.0.0.1:27017/student_tracker...');
+      try {
+        await mongoose.connect('mongodb://127.0.0.1:27017/student_tracker', {
+          serverSelectionTimeoutMS: 3000
+        });
+        console.log('MongoDB Connected to Local Database successfully!');
+        await autoSeedCloudDB();
+        await syncStudentStatuses();
+      } catch (localErr) {
+        console.error('Local MongoDB Fallback Error:', localErr.message);
+      }
+    }
   }
 };
 
