@@ -539,21 +539,141 @@ class EvaluationAutomationService {
       isAuth = true;
     }
 
-    // Check if on /teacher/tashjee-entry
-    const pageUrl = page.url();
-    if (!pageUrl.includes('/teacher/tashjee-entry')) {
-      this.addLog('INFO', 'Navigating to Tashjee Entry Form (/teacher/tashjee-entry)...');
+    // Follow user-specified UI navigation path:
+    // line after login -> Evaluation menu -> Tashjee Program (option 1) -> Entry Form tab (option 1)
+    await this.navigateToEntryForm(page);
+
+    return page;
+  }
+
+  // Navigate to Tashjee / Tanbeeh entry form following the user-specified UI hierarchy:
+  // 1. Search & click "Evaluation" tab
+  // 2. Click option 1: "Tashjee Program" (out of 1. Tashjee Program, 2. Remarks, 3. Character Assessment)
+  // 3. Click tab 1: "entry form" (out of 1. entry form, 2. tashjee detais)
+  // 4. Fallback to direct URL if UI navigation is blocked
+  async navigateToEntryForm(page) {
+    this.addLog('INFO', 'Navigating to Tashjee/Tanbeeh Entry Form via Evaluation menu...');
+
+    // 0. Quick check: if already on entry form and fields are interactive, skip navigation
+    const alreadyOnForm = await page.evaluate(() => {
+      const hasDept = !!document.querySelector('ng-select[formcontrolname="departmentId"]');
+      const hasType = !!document.querySelector('button.type-pill, .type-pill');
+      const hasSubmit = !!document.querySelector('button.submit-btn, button[type="submit"]');
+      return (hasDept && hasType) || (hasDept && hasSubmit);
+    }).catch(() => false);
+
+    if (alreadyOnForm) {
+      this.addLog('INFO', 'Already on Tashjee Entry Form.');
+      return true;
+    }
+
+    let menuSuccess = false;
+    try {
+      // Step 1: Find and click "Evaluation" menu/tab
+      const evalClicked = await page.evaluate(() => {
+        const allElements = Array.from(document.querySelectorAll(
+          '.menu-item, .menu-link, .menu-title, .nav-item, .nav-link, a, button, div, span'
+        ));
+
+        const evalEl = allElements.find(el => {
+          const txt = (el.textContent || '').trim();
+          return /^evaluation$/i.test(txt);
+        }) || allElements.find(el => {
+          const txt = (el.textContent || '').trim();
+          return /evaluation/i.test(txt) && txt.length < 30;
+        });
+
+        if (evalEl) {
+          evalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          evalEl.click();
+          return true;
+        }
+        return false;
+      });
+
+      if (evalClicked) {
+        this.addLog('INFO', 'Clicked "Evaluation" menu.');
+        await new Promise(r => setTimeout(r, 700));
+
+        // Step 2: In Evaluation menu, click option 1: "Tashjee Program"
+        const tashjeeClicked = await page.evaluate(() => {
+          const allElements = Array.from(document.querySelectorAll(
+            '.menu-sub .menu-item, .menu-sub a, .menu-sub .menu-link, .dropdown-menu a, a, button, span, div'
+          ));
+
+          const tashjeeEl = allElements.find(el => {
+            const txt = (el.textContent || '').trim();
+            return /tashjee\s*program/i.test(txt);
+          }) || allElements.find(el => {
+            const txt = (el.textContent || '').trim();
+            return /tashjee/i.test(txt) && !/detail/i.test(txt) && txt.length < 35;
+          }) || allElements.find(el => {
+            const href = (el.getAttribute('href') || el.getAttribute('routerlink') || '').toLowerCase();
+            return href.includes('tashjee');
+          });
+
+          if (tashjeeEl) {
+            tashjeeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            tashjeeEl.click();
+            return true;
+          }
+          return false;
+        });
+
+        if (tashjeeClicked) {
+          this.addLog('INFO', 'Clicked "Tashjee Program" (Option 1).');
+          await new Promise(r => setTimeout(r, 1200));
+          menuSuccess = true;
+        }
+      }
+    } catch (navErr) {
+      this.addLog('WARN', `Menu navigation notice: ${navErr.message}`);
+    }
+
+    // Step 3: If menu navigation wasn't possible or failed, open URL directly
+    if (!menuSuccess && !page.url().includes('/teacher/tashjee-entry')) {
+      this.addLog('INFO', 'Opening Tashjee Entry Form URL (/teacher/tashjee-entry)...');
       await page.goto('https://beta.jameasaifiyah.org/teacher/tashjee-entry', {
         waitUntil: 'domcontentloaded',
         timeout: 45000
-      });
-      // Wait for Angular components
-      await page.waitForSelector('button.submit-btn, ng-select[formcontrolname="departmentId"]', { timeout: 30000 }).catch(async () => {
-        await new Promise(r => setTimeout(r, 4000));
-      });
+      }).catch(err => this.addLog('WARN', `Direct URL notice: ${err.message}`));
     }
 
-    return page;
+    // Step 4: Click tab 1: "entry form" (out of 1. entry form, 2. tashjee detais)
+    try {
+      await page.waitForFunction(() => {
+        const tabs = Array.from(document.querySelectorAll('ul.nav-tabs a, .nav-item a, .nav-link, button, a'));
+        return tabs.some(el => /entry\s*form/i.test((el.textContent || '').trim())) ||
+               !!document.querySelector('ng-select[formcontrolname="departmentId"]');
+      }, { timeout: 15000 }).catch(() => {});
+
+      await page.evaluate(() => {
+        const tabs = Array.from(document.querySelectorAll('ul.nav-tabs a, .nav-item a, .nav-link, button, a, span, div'));
+        const entryTab = tabs.find(el => {
+          const txt = (el.textContent || '').trim();
+          return /^entry\s*form$/i.test(txt);
+        }) || tabs.find(el => {
+          const txt = (el.textContent || '').trim();
+          return /entry\s*form/i.test(txt) && txt.length < 25;
+        });
+
+        if (entryTab) {
+          entryTab.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          entryTab.click();
+        }
+      });
+      await new Promise(r => setTimeout(r, 600));
+    } catch (tabErr) {}
+
+    // Step 5: Wait for core Angular form components to hydrate
+    await page.waitForSelector('ng-select[formcontrolname="departmentId"], button.submit-btn, button.type-pill', {
+      timeout: 30000
+    }).catch(async () => {
+      await new Promise(r => setTimeout(r, 3000));
+    });
+
+    this.addLog('SUCCESS', 'Tashjee & Tanbeeh Entry Form is open and ready.');
+    return true;
   }
 
   // Check auth status from localStorage or URL
@@ -747,7 +867,7 @@ class EvaluationAutomationService {
                 try {
                   const p = this.sharedPage;
                   if (p && !p.isClosed()) {
-                    await p.goto('https://beta.jameasaifiyah.org/teacher/tashjee-entry', { waitUntil: 'domcontentloaded', timeout: 30000 });
+                    await this.navigateToEntryForm(p);
                     await new Promise(r => setTimeout(r, 1500));
                   }
                 } catch (recErr) {}
@@ -765,7 +885,7 @@ class EvaluationAutomationService {
               try {
                 const p = this.sharedPage;
                 if (p && !p.isClosed()) {
-                  await p.goto('https://beta.jameasaifiyah.org/teacher/tashjee-entry', { waitUntil: 'domcontentloaded', timeout: 30000 });
+                  await this.navigateToEntryForm(p);
                   await new Promise(r => setTimeout(r, 1500));
                 }
               } catch (recErr) {}
@@ -836,9 +956,8 @@ class EvaluationAutomationService {
     try {
       await page.waitForSelector('button.type-pill, ng-select[formcontrolname="departmentId"], button.submit-btn', { timeout: 18000 });
     } catch (selectorErr) {
-      this.addLog('WARN', 'Form component loading delayed, reloading entry page...', item.id);
-      await page.goto('https://beta.jameasaifiyah.org/teacher/tashjee-entry', { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForSelector('button.type-pill, ng-select[formcontrolname="departmentId"], button.submit-btn', { timeout: 25000 });
+      this.addLog('WARN', 'Form component loading delayed, navigating to entry form...', item.id);
+      await this.navigateToEntryForm(page);
     }
 
     // 3. Clear ALL stale banners/toasts so they cannot trigger false positives from previous students
@@ -882,10 +1001,12 @@ class EvaluationAutomationService {
     } else {
       this.addLog('WARN', `Could not find type-pill for ${item.evaluationType}`, item.id);
     }
+    await new Promise(r => setTimeout(r, 500));
 
     // 5. Select Idara (Department) - Defaults to Male Residences
     const targetIdara = item.idara || 'Male Residences';
     await this.selectIdara(page, targetIdara);
+    await new Promise(r => setTimeout(r, 600));
 
     // 6. Select Remark
     this.addLog('INFO', `Selecting Remark: ${item.remark}`, item.id);
@@ -1090,55 +1211,169 @@ class EvaluationAutomationService {
       }
 
       const selector = 'ng-select[formcontrolname="departmentId"] input';
-      await page.waitForSelector(selector, { timeout: 3000 });
+      await page.waitForSelector(selector, { timeout: 4000 });
       await page.click(selector);
       await page.type(selector, idaraName, { delay: 15 });
-      await page.waitForSelector('.ng-option', { timeout: 2500 });
-      return await page.evaluate(() => {
+      await page.waitForSelector('.ng-option', { timeout: 3000 });
+      const clicked = await page.evaluate(() => {
         const opt = document.querySelector('.ng-option');
         if (opt) { opt.click(); return true; }
         return false;
       });
+      await new Promise(r => setTimeout(r, 600));
+      return clicked;
     } catch (e) {
       return false;
     }
   }
 
-  // Select Remark in remarkId ng-select
+  // Select Remark in remarkId ng-select using intelligent panel matching
   async selectRemark(page, remarkText) {
     try {
-      const selector = 'ng-select[formcontrolname="remarkId"] input';
-      await page.waitForSelector(selector, { timeout: 5000 });
-      await page.click(selector);
+      // 1. Wait for ng-select remarkId container
+      await page.waitForSelector('ng-select[formcontrolname="remarkId"]', { timeout: 6000 });
 
-      // Clear input
+      // 2. Clear any input and open dropdown panel
       await page.evaluate(() => {
-        const inp = document.querySelector('ng-select[formcontrolname="remarkId"] input');
-        if (inp) inp.value = '';
+        const select = document.querySelector('ng-select[formcontrolname="remarkId"]');
+        if (!select) return;
+
+        // Clear input text if present
+        const inp = select.querySelector('input');
+        if (inp) {
+          inp.value = '';
+          inp.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        // Click arrow or container to open panel
+        const arrow = select.querySelector('.ng-arrow-wrapper') || select.querySelector('.ng-select-container') || select;
+        arrow.click();
       });
 
-      // Extract a distinctive search query from the remark
-      let query = remarkText;
-      const parts = remarkText.split(' - ');
-      if (parts.length >= 3) {
-        query = parts.slice(2).join(' ').trim();
-      }
-      query = query.substring(0, 22);
+      // 3. Wait for options or dropdown panel to appear
+      await page.waitForSelector('.ng-dropdown-panel .ng-option, ng-dropdown-panel .ng-option, .ng-option', { timeout: 4000 }).catch(() => {});
 
-      await page.type(selector, query, { delay: 15 });
-      await page.waitForSelector('.ng-option', { timeout: 3000 });
-
-      return await page.evaluate((fullText, q) => {
-        const options = Array.from(document.querySelectorAll('.ng-option'));
-        const matched = options.find(o => o.innerText.toLowerCase().includes(q.toLowerCase())) ||
-                        options.find(o => o.innerText.toLowerCase().includes(fullText.toLowerCase().substring(0, 20))) ||
-                        options[0];
-        if (matched) {
-          matched.click();
-          return true;
+      // 4. Try matching directly among open options
+      let matchResult = await page.evaluate((target) => {
+        function clean(str) {
+          return (str || '').toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
         }
-        return false;
-      }, remarkText, query);
+
+        const cleanTarget = clean(target);
+        const targetWords = cleanTarget.split(' ').filter(w => w.length >= 4);
+
+        // Find all visible, non-disabled option elements
+        const options = Array.from(document.querySelectorAll('.ng-dropdown-panel .ng-option, ng-dropdown-panel .ng-option, .ng-option'))
+          .filter(o => !o.classList.contains('ng-option-disabled'));
+
+        if (!options.length) {
+          return { found: false, count: 0 };
+        }
+
+        // Score each option
+        const scored = options.map(opt => {
+          const optText = opt.innerText || opt.textContent || '';
+          const cleanOpt = clean(optText);
+          let score = 0;
+
+          // Exact match
+          if (cleanOpt === cleanTarget) score += 1000;
+          // Containment
+          if (cleanOpt.includes(cleanTarget) || cleanTarget.includes(cleanOpt)) score += 500;
+          // Description match (split by ' - ')
+          const parts = target.split(' - ');
+          if (parts.length >= 3) {
+            const desc = clean(parts.slice(2).join(' '));
+            if (desc && (cleanOpt.includes(desc) || desc.includes(cleanOpt))) score += 400;
+          }
+          // Word tokens overlap
+          for (const word of targetWords) {
+            if (cleanOpt.includes(word)) score += 15;
+          }
+
+          return { opt, optText, score };
+        });
+
+        scored.sort((a, b) => b.score - a.score);
+        const best = scored[0];
+
+        if (best && best.score > 10) {
+          best.opt.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          best.opt.click();
+          return { found: true, text: best.optText, score: best.score };
+        }
+
+        return { found: false, count: options.length, bestScore: best ? best.score : 0 };
+      }, remarkText);
+
+      if (matchResult && matchResult.found) {
+        this.addLog('INFO', `Matched remark option: "${matchResult.text}" (score: ${matchResult.score})`);
+        return true;
+      }
+
+      // 5. Fallback: Type category / subcategory prefix into input if options were not matched
+      this.addLog('WARN', `Remark not found in open panel. Attempting filtered search for "${remarkText}"...`);
+      const selector = 'ng-select[formcontrolname="remarkId"] input';
+      await page.waitForSelector(selector, { timeout: 3000 });
+      await page.click(selector);
+
+      // Extract a safe search prefix (e.g., subcategory or first 15 chars)
+      let prefix = remarkText;
+      const parts = remarkText.split(' - ');
+      if (parts.length >= 2) {
+        prefix = parts[1].trim(); // e.g., "Musaadat" or "Namaaz"
+      }
+      if (!prefix || prefix.length < 3) {
+        prefix = remarkText.substring(0, 15);
+      }
+
+      await page.type(selector, prefix, { delay: 20 });
+      await page.waitForSelector('.ng-option', { timeout: 3000 }).catch(() => {});
+
+      // Re-run matching after typing
+      matchResult = await page.evaluate((target) => {
+        function clean(str) {
+          return (str || '').toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
+        const cleanTarget = clean(target);
+        const targetWords = cleanTarget.split(' ').filter(w => w.length >= 4);
+
+        const options = Array.from(document.querySelectorAll('.ng-dropdown-panel .ng-option, ng-dropdown-panel .ng-option, .ng-option'))
+          .filter(o => !o.classList.contains('ng-option-disabled'));
+
+        if (!options.length) return { found: false };
+
+        const scored = options.map(opt => {
+          const optText = opt.innerText || opt.textContent || '';
+          const cleanOpt = clean(optText);
+          let score = 0;
+          if (cleanOpt === cleanTarget) score += 1000;
+          if (cleanOpt.includes(cleanTarget) || cleanTarget.includes(cleanOpt)) score += 500;
+          for (const word of targetWords) {
+            if (cleanOpt.includes(word)) score += 15;
+          }
+          return { opt, optText, score };
+        });
+
+        scored.sort((a, b) => b.score - a.score);
+        const best = scored[0];
+
+        if (best && best.score > 0) {
+          best.opt.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          best.opt.click();
+          return { found: true, text: best.optText };
+        }
+
+        if (options[0]) {
+          options[0].click();
+          return { found: true, text: options[0].innerText || '' };
+        }
+
+        return { found: false };
+      }, remarkText);
+
+      return !!(matchResult && matchResult.found);
     } catch (e) {
       console.warn('selectRemark warning:', e.message);
       return false;
@@ -1149,7 +1384,7 @@ class EvaluationAutomationService {
   async enterStudentTrno(page, trno) {
     try {
       const selector = 'ng-select[formcontrolname="studentItsId"] input';
-      await page.waitForSelector(selector, { timeout: 5000 });
+      await page.waitForSelector(selector, { timeout: 6000 });
       await page.click(selector);
 
       await page.evaluate(() => {
@@ -1157,13 +1392,15 @@ class EvaluationAutomationService {
         if (inp) inp.value = '';
       });
 
-      await page.type(selector, String(trno), { delay: 15 });
-      await page.waitForSelector('.ng-option', { timeout: 3500 });
+      await page.type(selector, String(trno), { delay: 20 });
+      await page.waitForSelector('.ng-option', { timeout: 4000 });
 
       return await page.evaluate((tr) => {
-        const options = Array.from(document.querySelectorAll('.ng-option'));
-        const matched = options.find(o => o.innerText.includes(String(tr))) || options[0];
+        const options = Array.from(document.querySelectorAll('.ng-option'))
+          .filter(o => !o.classList.contains('ng-option-disabled'));
+        const matched = options.find(o => (o.innerText || '').includes(String(tr))) || options[0];
         if (matched) {
+          matched.scrollIntoView({ behavior: 'smooth', block: 'center' });
           matched.click();
           return true;
         }
