@@ -41,27 +41,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static('public', { extensions: ['html'] }));
-app.use('/tashjee-and-tanbeeh', express.static('public', { extensions: ['html'] }));
+app.use(express.static('public'));
 
-// Route aliases for clean URLs and reverse proxy subpaths (/tashjee-and-tanbeeh)
-app.get('/tashjee-and-tanbeeh', (req, res) => res.redirect('/evaluation.html'));
-app.get('/tashjee-and-tanbeeh/admin', (req, res) => res.redirect('/admin.html'));
-app.get('/tashjee-and-tanbeeh/evaluation', (req, res) => res.redirect('/evaluation.html'));
-app.get('/tashjee-and-tanbeeh/login', (req, res) => res.redirect('/login.html'));
-app.get('/admin', (req, res) => res.redirect('/admin.html'));
-app.get('/evaluation', (req, res) => res.redirect('/evaluation.html'));
-app.get('/login', (req, res) => res.redirect('/login.html'));
-
-// Rate Limiting: General API endpoints (Allow high throughput for live gate scanning and dashboards)
+// Rate Limiting: General API endpoints (100 requests per 15 min per IP)
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5000,
+  max: 100,
   validate: { xForwardedForHeader: false },
-  skip: (req) => {
-    const url = req.originalUrl || req.url || '';
-    return url.includes('/queue/status') || url.includes('/stats') || url.includes('/remarks');
-  },
   message: { success: false, message: 'Too many requests, please try again later.' }
 });
 
@@ -104,8 +90,6 @@ app.post('/api/auth/login', authLimiter, require('./controllers/authController')
 // Protected API Routes
 app.use('/api/student', apiLimiter, verifyToken, require('./routes/studentRoutes'));
 app.use('/api/movement', apiLimiter, verifyToken, require('./routes/movementRoutes'));
-app.use('/api/evaluation', apiLimiter, verifyToken, require('./routes/evaluationRoutes'));
-app.use('/tashjee-and-tanbeeh/api/evaluation', apiLimiter, verifyToken, require('./routes/evaluationRoutes'));
 
 // Global Error Handler (Prevents stack trace leaks in production)
 app.use((err, req, res, next) => {
@@ -114,14 +98,6 @@ app.use((err, req, res, next) => {
     success: false,
     message: err.message || 'Internal Server Error'
   });
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('[UNCAUGHT EXCEPTION]', err.message || err);
-});
-
-process.on('unhandledRejection', (reason) => {
-  console.error('[UNHANDLED REJECTION]', reason ? (reason.message || reason) : 'Unknown reason');
 });
 
 const PORT = process.env.PORT || 3000;

@@ -73,58 +73,34 @@ async function autoSeedCloudDB() {
         console.log('--- Cloud Database Initialized Successfully! ---');
       }
     }
-
-    // Auto-seed evaluation remarks if empty
-    try {
-      const EvaluationRemark = require('../models/EvaluationRemark');
-      const remarkCount = await EvaluationRemark.countDocuments();
-      if (remarkCount === 0) {
-        const remarkSeedPath = path.join(__dirname, '..', 'data', 'evaluation_remarks.json');
-        if (fs.existsSync(remarkSeedPath)) {
-          const rawRemarks = fs.readFileSync(remarkSeedPath, 'utf-8');
-          const remarksData = JSON.parse(rawRemarks);
-          if (Array.isArray(remarksData) && remarksData.length > 0) {
-            console.log(`Auto-seeding ${remarksData.length} evaluation remarks...`);
-            await EvaluationRemark.insertMany(remarksData);
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('Evaluation remarks seed warning:', e.message);
-    }
   } catch (err) {
     console.error('Auto-seed warning:', err.message);
   }
 }
 
 const connectDB = async () => {
-  const rawUri = process.env.MONGO_URI || process.env.MONGO_URI_ATLAS;
-  let uri = (rawUri && !rawUri.includes('your_secure_password'))
-    ? cleanMongoUri(rawUri)
-    : 'mongodb://127.0.0.1:27017/student_tracker';
+  let uri = (process.env.MONGO_URI && !process.env.MONGO_URI.includes('your_secure_password'))
+    ? cleanMongoUri(process.env.MONGO_URI)
+    : (process.env.NODE_ENV === 'production' ? null : 'mongodb://127.0.0.1:27017/student_tracker');
+
+  if (!uri) {
+    console.error('===============================================================');
+    console.error('ERROR: MONGO_URI environment variable is missing in Render!');
+    console.error('Please go to Render Dashboard -> Environment and add MONGO_URI.');
+    console.error('===============================================================');
+    return;
+  }
 
   try {
     await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000
+      serverSelectionTimeoutMS: 8000
     });
     console.log('MongoDB Connected Successfully to:', mongoose.connection.host);
     await autoSeedCloudDB();
     await syncStudentStatuses();
   } catch (error) {
-    console.warn('MongoDB Atlas Connection Warning:', error.message);
-    if (!uri.includes('127.0.0.1') && !uri.includes('localhost')) {
-      console.log('Falling back to local MongoDB at mongodb://127.0.0.1:27017/student_tracker...');
-      try {
-        await mongoose.connect('mongodb://127.0.0.1:27017/student_tracker', {
-          serverSelectionTimeoutMS: 3000
-        });
-        console.log('MongoDB Connected to Local Database successfully!');
-        await autoSeedCloudDB();
-        await syncStudentStatuses();
-      } catch (localErr) {
-        console.error('Local MongoDB Fallback Error:', localErr.message);
-      }
-    }
+    console.error('MongoDB Connection Error:', error.message);
+    console.error('Make sure your MongoDB Atlas IP Access List allows 0.0.0.0/0 (anywhere).');
   }
 };
 
