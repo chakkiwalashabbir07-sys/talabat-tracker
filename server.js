@@ -41,7 +41,17 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static('public'));
+app.use(express.static('public', { extensions: ['html'] }));
+app.use('/tashjee-and-tanbeeh', express.static('public', { extensions: ['html'] }));
+
+// Route aliases for clean URLs and reverse proxy subpaths (/tashjee-and-tanbeeh)
+app.get('/tashjee-and-tanbeeh', (req, res) => res.redirect('/evaluation.html'));
+app.get('/tashjee-and-tanbeeh/admin', (req, res) => res.redirect('/admin.html'));
+app.get('/tashjee-and-tanbeeh/evaluation', (req, res) => res.redirect('/evaluation.html'));
+app.get('/tashjee-and-tanbeeh/login', (req, res) => res.redirect('/login.html'));
+app.get('/admin', (req, res) => res.redirect('/admin.html'));
+app.get('/evaluation', (req, res) => res.redirect('/evaluation.html'));
+app.get('/login', (req, res) => res.redirect('/login.html'));
 
 // Rate Limiting: General API endpoints (Allow high throughput for live gate scanning and dashboards)
 const apiLimiter = rateLimit({
@@ -95,6 +105,7 @@ app.post('/api/auth/login', authLimiter, require('./controllers/authController')
 app.use('/api/student', apiLimiter, verifyToken, require('./routes/studentRoutes'));
 app.use('/api/movement', apiLimiter, verifyToken, require('./routes/movementRoutes'));
 app.use('/api/evaluation', apiLimiter, verifyToken, require('./routes/evaluationRoutes'));
+app.use('/tashjee-and-tanbeeh/api/evaluation', apiLimiter, verifyToken, require('./routes/evaluationRoutes'));
 
 // Global Error Handler (Prevents stack trace leaks in production)
 app.use((err, req, res, next) => {
