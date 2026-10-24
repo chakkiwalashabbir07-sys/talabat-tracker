@@ -251,11 +251,12 @@ exports.apiEnqueueBulk = async (req, res) => {
       points: points || (evaluationType === 'Tashjee' ? 10 : -5)
     };
 
-    const enqueuedItems = evaluationAutomationService.enqueueBulk(students, commonParams, req.user);
+    const result = evaluationAutomationService.enqueueBulk(students, req.user, commonParams);
     res.json({
       success: true,
-      message: `Enqueued ${enqueuedItems.length} students into shared automation queue.`,
-      count: enqueuedItems.length,
+      message: `Enqueued ${result.count} students into shared automation queue.`,
+      count: result.count,
+      jobId: result.jobId,
       queueStatus: evaluationAutomationService.getQueueStatus()
     });
   } catch (error) {

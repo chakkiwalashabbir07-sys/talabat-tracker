@@ -191,11 +191,22 @@ class EvaluationAutomationService {
   }
 
   // Enqueue bulk entries
-  enqueueBulk(itemsArray, user, sharedParams = {}, options = {}) {
+  enqueueBulk(itemsArray, arg2, arg3 = {}, options = {}) {
     if (this.idleCloseTimer) {
       clearTimeout(this.idleCloseTimer);
       this.idleCloseTimer = null;
     }
+
+    let user = null;
+    let sharedParams = {};
+    if (arg2 && (arg2.evaluationType || arg2.remark || arg2.idara)) {
+      sharedParams = arg2;
+      user = arg3;
+    } else {
+      user = arg2;
+      sharedParams = arg3 || {};
+    }
+
     const jobId = 'bulk_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     const enqueuedItems = [];
 

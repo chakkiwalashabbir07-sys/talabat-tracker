@@ -98,17 +98,10 @@ async function autoSeedCloudDB() {
 }
 
 const connectDB = async () => {
-  let uri = (process.env.MONGO_URI && !process.env.MONGO_URI.includes('your_secure_password'))
-    ? cleanMongoUri(process.env.MONGO_URI)
-    : (process.env.NODE_ENV === 'production' ? null : 'mongodb://127.0.0.1:27017/student_tracker');
-
-  if (!uri) {
-    console.error('===============================================================');
-    console.error('ERROR: MONGO_URI environment variable is missing in Render!');
-    console.error('Please go to Render Dashboard -> Environment and add MONGO_URI.');
-    console.error('===============================================================');
-    return;
-  }
+  const rawUri = process.env.MONGO_URI || process.env.MONGO_URI_ATLAS;
+  let uri = (rawUri && !rawUri.includes('your_secure_password'))
+    ? cleanMongoUri(rawUri)
+    : 'mongodb://127.0.0.1:27017/student_tracker';
 
   try {
     await mongoose.connect(uri, {
